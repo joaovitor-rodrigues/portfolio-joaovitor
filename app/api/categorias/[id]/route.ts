@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import * as categorias from "@/lib/categorias";
 import * as projetos from "@/lib/projetos";

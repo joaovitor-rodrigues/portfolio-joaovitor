@@ -37,6 +37,7 @@ export default function AdminProjetosClient({ projetos: initialProjetos, categor
     if (res.ok) {
       const updated = await res.json();
       setProjetos((prev) => prev.map((p) => (p.slug === projeto.slug ? updated : p)));
+      router.refresh();
     }
   }
 

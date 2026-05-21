@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ContatoConfig, ContatoLink } from "@/lib/contato";
 import { TIPOS_LINK, ContatoIcon } from "@/lib/contatoIcons";
 
@@ -18,6 +19,7 @@ function newLink(): ContatoLink {
 }
 
 export default function AdminContatoClient({ initialData }: Props) {
+  const router = useRouter();
   const [form, setForm] = useState<ContatoConfig>(initialData);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -67,6 +69,7 @@ export default function AdminContatoClient({ initialData }: Props) {
       });
       if (!res.ok) throw new Error("Erro ao salvar");
       setSaved(true);
+      router.refresh();
     } catch {
       setError("Não foi possível salvar. Tente novamente.");
     } finally {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { SiteConfig } from "@/lib/site";
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function AdminSiteClient({ initialData }: Props) {
+  const router = useRouter();
   const [form, setForm] = useState(initialData);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -30,6 +32,7 @@ export default function AdminSiteClient({ initialData }: Props) {
       });
       if (!res.ok) throw new Error("Erro ao salvar");
       setSaved(true);
+      router.refresh();
     } catch {
       setError("Não foi possível salvar. Tente novamente.");
     } finally {

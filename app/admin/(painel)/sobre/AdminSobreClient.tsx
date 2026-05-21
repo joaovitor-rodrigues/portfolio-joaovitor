@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { SobreConfig, Stat, FotoCrop } from "@/lib/sobre";
 import { resolveImageUrl } from "@/lib/gdrive";
 import FotoCropEditor from "@/components/admin/FotoCropEditor";
@@ -65,6 +66,7 @@ function SectionHeader({
 const DEFAULT_CROP: FotoCrop = { x: 50, y: 50, scale: 1 };
 
 export default function AdminSobreClient({ initialData }: Props) {
+  const router = useRouter();
   const [form, setForm] = useState<SobreConfig>(initialData);
   const [showCrop, setShowCrop] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -120,6 +122,7 @@ export default function AdminSobreClient({ initialData }: Props) {
       });
       if (!res.ok) throw new Error("Erro ao salvar");
       setSaved(true);
+      router.refresh();
     } catch {
       setError("Não foi possível salvar. Tente novamente.");
     } finally {

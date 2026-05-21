@@ -1,10 +1,12 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { get } from "@/lib/contato";
+import { get as getSite } from "@/lib/site";
 import { ContatoIcon } from "@/lib/contatoIcons";
 
 export default function ContatoPage() {
   const contato = get();
+  const site = getSite();
 
   return (
     <>
@@ -45,6 +47,7 @@ export default function ContatoPage() {
               method="POST"
               className="space-y-4"
             >
+              <input type="hidden" name="_next" value={`${site.siteUrl}/contato/obrigado`} />
               <div>
                 <label className="block text-sm font-medium text-[#374151] mb-1">Nome</label>
                 <input

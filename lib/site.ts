@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 
 export interface SiteConfig {
+  siteUrl: string;
   heroTitulo: string;
   heroSubtitulo: string;
   heroCta1Label: string;

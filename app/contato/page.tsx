@@ -1,12 +1,11 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import ContatoForm from "@/components/ContatoForm";
 import { get } from "@/lib/contato";
-import { get as getSite } from "@/lib/site";
 import { ContatoIcon } from "@/lib/contatoIcons";
 
 export default function ContatoPage() {
   const contato = get();
-  const site = getSite();
 
   return (
     <>
@@ -42,49 +41,7 @@ export default function ContatoPage() {
           {/* Formulário */}
           <div className="border-t border-[#E5E7EB] pt-10">
             <h2 className="font-display text-2xl font-normal text-[#111118] mb-6">Enviar mensagem</h2>
-            <form
-              action={`https://formspree.io/f/${contato.formspreeId}`}
-              method="POST"
-              className="space-y-4"
-            >
-              <input type="hidden" name="_next" value={`${site.siteUrl}/contato/obrigado`} />
-              <div>
-                <label className="block text-sm font-medium text-[#374151] mb-1">Nome</label>
-                <input
-                  type="text"
-                  name="nome"
-                  required
-                  className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition"
-                  placeholder="Seu nome"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#374151] mb-1">E-mail</label>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition"
-                  placeholder="seu@email.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#374151] mb-1">Mensagem</label>
-                <textarea
-                  name="mensagem"
-                  required
-                  rows={5}
-                  className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition resize-none"
-                  placeholder="Conte sobre seu projeto..."
-                />
-              </div>
-              <button
-                type="submit"
-                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
-              >
-                Enviar mensagem
-              </button>
-            </form>
+            <ContatoForm formspreeId={contato.formspreeId} />
           </div>
         </div>
       </main>

@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+﻿import { getSupabase } from "./supabase";
 
 export type TipoLink =
   | "email"
@@ -28,7 +28,7 @@ export interface ContatoConfig {
 const KEY = "contato";
 
 export async function get(): Promise<ContatoConfig> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("config")
     .select("value")
     .eq("key", KEY)
@@ -40,9 +40,10 @@ export async function get(): Promise<ContatoConfig> {
 export async function update(input: Partial<ContatoConfig>): Promise<ContatoConfig> {
   const current = await get();
   const updated = { ...current, ...input };
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("config")
     .upsert({ key: KEY, value: updated });
   if (error) throw new Error(`Erro ao salvar contato: ${error.message}`);
   return updated;
 }
+

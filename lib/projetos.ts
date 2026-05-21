@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+﻿import { getSupabase } from "./supabase";
 
 export interface Festival {
   id: string;
@@ -58,7 +58,7 @@ function normalize(p: Projeto): Projeto {
 export async function getAll(filters?: {
   destaque?: boolean;
 }): Promise<Projeto[]> {
-  const { data, error } = await supabase.from("projetos").select("data");
+  const { data, error } = await getSupabase().from("projetos").select("data");
   if (error) throw new Error(`Erro ao buscar projetos: ${error.message}`);
 
   let projetos = (data ?? []).map((row) => normalize(row.data as Projeto));
@@ -76,7 +76,7 @@ export async function getAll(filters?: {
 }
 
 export async function getBySlug(slug: string): Promise<Projeto | undefined> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("projetos")
     .select("data")
     .eq("slug", slug)
@@ -90,7 +90,7 @@ export async function create(
     Partial<Pick<Projeto, "festivais" | "premios" | "mostrarFestivais" | "mostrarPremios">>
 ): Promise<Projeto> {
   const novo: Projeto = { ...input, criadoEm: new Date().toISOString() };
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("projetos")
     .insert({ slug: novo.slug, data: novo });
   if (error) throw new Error(`Erro ao criar projeto: ${error.message}`);
@@ -104,7 +104,7 @@ export async function update(
   const current = await getBySlug(slug);
   if (!current) return null;
   const updated = { ...current, ...input };
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("projetos")
     .update({ data: updated })
     .eq("slug", slug);
@@ -113,10 +113,11 @@ export async function update(
 }
 
 export async function remove(slug: string): Promise<boolean> {
-  const { error, count } = await supabase
+  const { error, count } = await getSupabase()
     .from("projetos")
     .delete({ count: "exact" })
     .eq("slug", slug);
   if (error) throw new Error(`Erro ao remover projeto: ${error.message}`);
   return (count ?? 0) > 0;
 }
+

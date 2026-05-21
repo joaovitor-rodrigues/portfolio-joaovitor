@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+﻿import { getSupabase } from "./supabase";
 
 export interface Categoria {
   id: string;
@@ -8,7 +8,7 @@ export interface Categoria {
 }
 
 export async function getAll(): Promise<Categoria[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("categorias")
     .select("data");
   if (error) throw new Error(`Erro ao buscar categorias: ${error.message}`);
@@ -21,7 +21,7 @@ export async function getBySlug(slug: string): Promise<Categoria | undefined> {
 }
 
 export async function getById(id: string): Promise<Categoria | undefined> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("categorias")
     .select("data")
     .eq("id", id)
@@ -32,7 +32,7 @@ export async function getById(id: string): Promise<Categoria | undefined> {
 
 export async function create(input: Omit<Categoria, "id">): Promise<Categoria> {
   const nova: Categoria = { ...input, id: `cat-${Date.now()}` };
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("categorias")
     .insert({ id: nova.id, data: nova });
   if (error) throw new Error(`Erro ao criar categoria: ${error.message}`);
@@ -46,7 +46,7 @@ export async function update(
   const current = await getById(id);
   if (!current) return null;
   const updated = { ...current, ...input };
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("categorias")
     .update({ data: updated })
     .eq("id", id);
@@ -55,10 +55,11 @@ export async function update(
 }
 
 export async function remove(id: string): Promise<boolean> {
-  const { error, count } = await supabase
+  const { error, count } = await getSupabase()
     .from("categorias")
     .delete({ count: "exact" })
     .eq("id", id);
   if (error) throw new Error(`Erro ao remover categoria: ${error.message}`);
   return (count ?? 0) > 0;
 }
+

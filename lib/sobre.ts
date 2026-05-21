@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+﻿import { getSupabase } from "./supabase";
 
 export interface Stat {
   valor: string;
@@ -27,7 +27,7 @@ export interface SobreConfig {
 const KEY = "sobre";
 
 export async function get(): Promise<SobreConfig> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("config")
     .select("value")
     .eq("key", KEY)
@@ -39,9 +39,10 @@ export async function get(): Promise<SobreConfig> {
 export async function update(input: Partial<SobreConfig>): Promise<SobreConfig> {
   const current = await get();
   const updated = { ...current, ...input };
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("config")
     .upsert({ key: KEY, value: updated });
   if (error) throw new Error(`Erro ao salvar sobre: ${error.message}`);
   return updated;
 }
+

@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+﻿import { getSupabase } from "./supabase";
 
 export interface SiteConfig {
   siteUrl: string;
@@ -13,7 +13,7 @@ export interface SiteConfig {
 const KEY = "site";
 
 export async function get(): Promise<SiteConfig> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("config")
     .select("value")
     .eq("key", KEY)
@@ -25,9 +25,10 @@ export async function get(): Promise<SiteConfig> {
 export async function update(input: Partial<SiteConfig>): Promise<SiteConfig> {
   const current = await get();
   const updated = { ...current, ...input };
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("config")
     .upsert({ key: KEY, value: updated });
   if (error) throw new Error(`Erro ao salvar site: ${error.message}`);
   return updated;
 }
+

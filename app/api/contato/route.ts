@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import * as contato from "@/lib/contato";
 
 export async function GET() {
-  return NextResponse.json(contato.get());
+  const data = await contato.get();
+  return NextResponse.json(data);
 }
 
 export async function PUT(request: NextRequest) {
@@ -12,6 +13,6 @@ export async function PUT(request: NextRequest) {
   }
 
   const body = await request.json();
-  const updated = contato.update(body);
+  const updated = await contato.update(body);
   return NextResponse.json(updated);
 }

@@ -8,21 +8,20 @@ import { getAll as getCategorias } from "@/lib/categorias";
 import { get as getSite } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const site = getSite();
+  const site = await getSite();
   return {
     title: site.metaTitle,
     description: site.metaDescription,
   };
 }
 
-export default function Home() {
-  const site = getSite();
-  const allProjetos = getProjetos();
-  const categorias = getCategorias();
+export default async function Home() {
+  const site = await getSite();
+  const allProjetos = await getProjetos();
+  const categorias = await getCategorias();
   const publicados = allProjetos.filter((p) => p.publicado);
   const destaques = publicados.filter((p) => p.destaque);
 
-  // Projetos por categoria
   const categoriasComCount = categorias
     .map((cat) => ({
       ...cat,
@@ -31,7 +30,6 @@ export default function Home() {
     .filter((cat) => cat.count > 0)
     .sort((a, b) => b.count - a.count);
 
-  // Suporta quebra de linha com \n no título
   const heroLinhas = site.heroTitulo.split("\\n").join("\n").split("\n");
 
   return (
@@ -90,7 +88,6 @@ export default function Home() {
         {categoriasComCount.length > 0 && (
           <section className="px-6 pb-24 max-w-6xl mx-auto">
             <h2 className="font-display text-3xl font-normal text-[#111118] mb-8">Áreas de Atuação</h2>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {categoriasComCount.map((cat) => (
                 <Link
@@ -99,7 +96,6 @@ export default function Home() {
                   style={{ "--accent": cat.cor } as React.CSSProperties}
                   className="group relative flex flex-col justify-between gap-8 p-7 rounded-2xl border-2 border-[var(--accent)] bg-white hover:bg-[var(--accent)] transition-all duration-300"
                 >
-                  {/* Dot + contagem */}
                   <div className="flex items-center justify-between">
                     <span
                       className="w-3 h-3 rounded-full transition-colors duration-300 group-hover:bg-white"
@@ -109,8 +105,6 @@ export default function Home() {
                       {cat.count} {cat.count === 1 ? "projeto" : "projetos"}
                     </span>
                   </div>
-
-                  {/* Nome + seta */}
                   <div className="flex items-end justify-between gap-4">
                     <h3 className="font-display text-2xl sm:text-3xl font-normal text-[#111118] group-hover:text-white transition-colors duration-300 leading-tight">
                       {cat.nome}

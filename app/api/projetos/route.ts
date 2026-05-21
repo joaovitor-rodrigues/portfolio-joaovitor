@@ -6,9 +6,10 @@ export async function GET(request: NextRequest) {
   const categoriaSlug = searchParams.get("categoria") || undefined;
   const funcao = searchParams.get("funcao") || undefined;
   const destaqueParam = searchParams.get("destaque");
-  const destaque = destaqueParam === "true" ? true : destaqueParam === "false" ? false : undefined;
+  const destaque =
+    destaqueParam === "true" ? true : destaqueParam === "false" ? false : undefined;
 
-  let all = projetos.getAll();
+  let all = await projetos.getAll();
 
   if (destaque !== undefined) {
     all = all.filter((p) => p.destaque === destaque);
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
 
   if (categoriaSlug) {
     const { getAll: getCats } = await import("@/lib/categorias");
-    const cats = getCats();
+    const cats = await getCats();
     const cat = cats.find((c) => c.slug === categoriaSlug);
     all = cat ? all.filter((p) => p.categorias?.includes(cat.id)) : [];
   }
@@ -36,18 +37,19 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
 
-  // Basic validation
   if (!body.titulo || !body.slug) {
-    return NextResponse.json({ error: "Título e slug são obrigatórios" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Título e slug são obrigatórios" },
+      { status: 400 }
+    );
   }
 
-  // Check slug uniqueness
-  const existing = projetos.getBySlug(body.slug);
+  const existing = await projetos.getBySlug(body.slug);
   if (existing) {
     return NextResponse.json({ error: "Slug já existe" }, { status: 400 });
   }
 
-  const novo = projetos.create({
+  const novo = await projetos.create({
     slug: body.slug,
     titulo: body.titulo,
     funcaoRealizada: body.funcaoRealizada || "",
@@ -55,7 +57,11 @@ export async function POST(request: NextRequest) {
     ano: Number(body.ano) || new Date().getFullYear(),
     duracao: body.duracao || "",
     genero: body.genero || "",
-    categorias: Array.isArray(body.categorias) ? body.categorias : (body.categoriaId ? [body.categoriaId] : []),
+    categorias: Array.isArray(body.categorias)
+      ? body.categorias
+      : body.categoriaId
+      ? [body.categoriaId]
+      : [],
     descricaoCurta: body.descricaoCurta || "",
     descricaoLonga: body.descricaoLonga || "",
     thumb: body.thumb || "",

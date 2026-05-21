@@ -12,7 +12,7 @@ export async function PUT(
   }
 
   const body = await request.json();
-  const updated = categorias.update(params.id, body);
+  const updated = await categorias.update(params.id, body);
 
   if (!updated) {
     return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
@@ -29,17 +29,19 @@ export async function DELETE(
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  // Check if any project uses this category
-  const allProjetos = projetos.getAll();
+  const allProjetos = await projetos.getAll();
   const inUse = allProjetos.some((p) => p.categoriaId === params.id);
   if (inUse) {
     return NextResponse.json(
-      { error: "Categoria possui projetos vinculados. Remova ou transfira os projetos primeiro." },
+      {
+        error:
+          "Categoria possui projetos vinculados. Remova ou transfira os projetos primeiro.",
+      },
       { status: 400 }
     );
   }
 
-  const ok = categorias.remove(params.id);
+  const ok = await categorias.remove(params.id);
   if (!ok) {
     return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
   }

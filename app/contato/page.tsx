@@ -4,8 +4,8 @@ import ContatoForm from "@/components/ContatoForm";
 import { get } from "@/lib/contato";
 import { ContatoIcon } from "@/lib/contatoIcons";
 
-export default function ContatoPage() {
-  const contato = get();
+export default async function ContatoPage() {
+  const contato = await get();
 
   return (
     <>

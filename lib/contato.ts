@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { supabase } from "./supabase";
 
 export type TipoLink =
   | "email"
@@ -26,16 +25,24 @@ export interface ContatoConfig {
   formspreeId: string;
 }
 
-const filePath = path.join(process.cwd(), "data", "contato.json");
+const KEY = "contato";
 
-export function get(): ContatoConfig {
-  const raw = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(raw) as ContatoConfig;
+export async function get(): Promise<ContatoConfig> {
+  const { data, error } = await supabase
+    .from("config")
+    .select("value")
+    .eq("key", KEY)
+    .single();
+  if (error) throw new Error(`Erro ao buscar contato: ${error.message}`);
+  return data.value as ContatoConfig;
 }
 
-export function update(data: Partial<ContatoConfig>): ContatoConfig {
-  const current = get();
-  const updated = { ...current, ...data };
-  fs.writeFileSync(filePath, JSON.stringify(updated, null, 2), "utf-8");
+export async function update(input: Partial<ContatoConfig>): Promise<ContatoConfig> {
+  const current = await get();
+  const updated = { ...current, ...input };
+  const { error } = await supabase
+    .from("config")
+    .upsert({ key: KEY, value: updated });
+  if (error) throw new Error(`Erro ao salvar contato: ${error.message}`);
   return updated;
 }

@@ -7,11 +7,13 @@ interface Props {
   params: { slug: string };
 }
 
-export default function EditarProjetoPage({ params }: Props) {
-  const projeto = getBySlug(params.slug);
-  if (!projeto) notFound();
+export default async function EditarProjetoPage({ params }: Props) {
+  const [projeto, categorias] = await Promise.all([
+    getBySlug(params.slug),
+    getCategorias(),
+  ]);
 
-  const categorias = getCategorias();
+  if (!projeto) notFound();
 
   return (
     <div>

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import * as sobre from "@/lib/sobre";
 
 export async function GET() {
-  return NextResponse.json(sobre.get());
+  const data = await sobre.get();
+  return NextResponse.json(data);
 }
 
 export async function PUT(request: NextRequest) {
@@ -12,6 +13,6 @@ export async function PUT(request: NextRequest) {
   }
 
   const body = await request.json();
-  const updated = sobre.update(body);
+  const updated = await sobre.update(body);
   return NextResponse.json(updated);
 }

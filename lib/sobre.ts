@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { supabase } from "./supabase";
 
 export interface Stat {
   valor: string;
@@ -7,9 +6,9 @@ export interface Stat {
 }
 
 export interface FotoCrop {
-  x: number;     // 0–100, focal point horizontal (%)
-  y: number;     // 0–100, focal point vertical (%)
-  scale: number; // 1.0–3.0, zoom factor
+  x: number;
+  y: number;
+  scale: number;
 }
 
 export interface SobreConfig {
@@ -25,16 +24,24 @@ export interface SobreConfig {
   mostrarFoto: boolean;
 }
 
-const filePath = path.join(process.cwd(), "data", "sobre.json");
+const KEY = "sobre";
 
-export function get(): SobreConfig {
-  const raw = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(raw) as SobreConfig;
+export async function get(): Promise<SobreConfig> {
+  const { data, error } = await supabase
+    .from("config")
+    .select("value")
+    .eq("key", KEY)
+    .single();
+  if (error) throw new Error(`Erro ao buscar sobre: ${error.message}`);
+  return data.value as SobreConfig;
 }
 
-export function update(data: Partial<SobreConfig>): SobreConfig {
-  const current = get();
-  const updated = { ...current, ...data };
-  fs.writeFileSync(filePath, JSON.stringify(updated, null, 2), "utf-8");
+export async function update(input: Partial<SobreConfig>): Promise<SobreConfig> {
+  const current = await get();
+  const updated = { ...current, ...input };
+  const { error } = await supabase
+    .from("config")
+    .upsert({ key: KEY, value: updated });
+  if (error) throw new Error(`Erro ao salvar sobre: ${error.message}`);
   return updated;
 }

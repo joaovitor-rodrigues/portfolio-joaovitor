@@ -10,9 +10,11 @@ interface Props {
   searchParams: { categoria?: string; funcao?: string };
 }
 
-export default function ProjetosPage({ searchParams }: Props) {
-  const allProjetos = getProjetos();
-  const categorias = getCategorias();
+export default async function ProjetosPage({ searchParams }: Props) {
+  const [allProjetos, categorias] = await Promise.all([
+    getProjetos(),
+    getCategorias(),
+  ]);
 
   let projetos = allProjetos.filter((p) => p.publicado);
 
@@ -48,7 +50,6 @@ export default function ProjetosPage({ searchParams }: Props) {
           )}
         </div>
 
-        {/* Filtro por categoria — só aparece quando não está filtrando por função */}
         {!searchParams.funcao && (
           <div className="mb-8">
             <Suspense fallback={null}>
@@ -57,7 +58,6 @@ export default function ProjetosPage({ searchParams }: Props) {
           </div>
         )}
 
-        {/* Filtro por função ativo */}
         {searchParams.funcao && (
           <div className="mb-8">
             <a

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import * as site from "@/lib/site";
 
 export async function GET() {
-  return NextResponse.json(site.get());
+  const data = await site.get();
+  return NextResponse.json(data);
 }
 
 export async function PUT(request: NextRequest) {
@@ -12,6 +13,6 @@ export async function PUT(request: NextRequest) {
   }
 
   const body = await request.json();
-  const updated = site.update(body);
+  const updated = await site.update(body);
   return NextResponse.json(updated);
 }

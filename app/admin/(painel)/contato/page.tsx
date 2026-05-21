@@ -1,8 +1,8 @@
 import { get } from "@/lib/contato";
 import AdminContatoClient from "./AdminContatoClient";
 
-export default function AdminContatoPage() {
-  const data = get();
+export default async function AdminContatoPage() {
+  const data = await get();
   return (
     <div>
       <div className="mb-8">

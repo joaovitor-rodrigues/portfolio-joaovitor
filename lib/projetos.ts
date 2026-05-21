@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { supabase } from "./supabase";
 
 export interface Festival {
   id: string;
@@ -13,7 +12,7 @@ export interface Premio {
   nome: string;
   categoria: string;
   ano: string;
-  festivalId?: string; // vínculo opcional com um festival do mesmo projeto
+  festivalId?: string;
 }
 
 export interface Projeto {
@@ -41,69 +40,83 @@ export interface Projeto {
   mostrarPremios: boolean;
 }
 
-const filePath = path.join(process.cwd(), "data", "projetos.json");
-
-function readFile(): Projeto[] {
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const data = JSON.parse(raw) as Projeto[];
-  // garante compatibilidade com projetos criados antes desses campos existirem
-  return data.map((p) => {
-    const base = {
-      ...p,
-      festivais: p.festivais ?? [],
-      premios: p.premios ?? [],
-      mostrarFestivais: p.mostrarFestivais ?? true,
-      mostrarPremios: p.mostrarPremios ?? true,
-      categorias: p.categorias ?? [],
-    };
-    // migra categoriaId legado → categorias[]
-    if (base.categorias.length === 0 && base.categoriaId) {
-      base.categorias = [base.categoriaId];
-    }
-    return base;
-  });
-}
-
-function writeFile(data: Projeto[]) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
-}
-
-export function getAll(filters?: { categoriaSlug?: string; destaque?: boolean }): Projeto[] {
-  let all = readFile();
-  if (filters?.destaque !== undefined) {
-    all = all.filter((p) => p.destaque === filters.destaque);
-  }
-  return all;
-}
-
-export function getBySlug(slug: string): Projeto | undefined {
-  return readFile().find((p) => p.slug === slug);
-}
-
-export function create(data: Omit<Projeto, "criadoEm"> & Partial<Pick<Projeto, "festivais" | "premios" | "mostrarFestivais" | "mostrarPremios">>): Projeto {
-  const all = readFile();
-  const newProjeto: Projeto = {
-    ...data,
-    criadoEm: new Date().toISOString(),
+function normalize(p: Projeto): Projeto {
+  const base = {
+    ...p,
+    festivais: p.festivais ?? [],
+    premios: p.premios ?? [],
+    mostrarFestivais: p.mostrarFestivais ?? true,
+    mostrarPremios: p.mostrarPremios ?? true,
+    categorias: p.categorias ?? [],
   };
-  all.push(newProjeto);
-  writeFile(all);
-  return newProjeto;
+  if (base.categorias.length === 0 && base.categoriaId) {
+    base.categorias = [base.categoriaId];
+  }
+  return base;
 }
 
-export function update(slug: string, data: Partial<Projeto>): Projeto | null {
-  const all = readFile();
-  const idx = all.findIndex((p) => p.slug === slug);
-  if (idx === -1) return null;
-  all[idx] = { ...all[idx], ...data };
-  writeFile(all);
-  return all[idx];
+export async function getAll(filters?: {
+  destaque?: boolean;
+}): Promise<Projeto[]> {
+  const { data, error } = await supabase.from("projetos").select("data");
+  if (error) throw new Error(`Erro ao buscar projetos: ${error.message}`);
+
+  let projetos = (data ?? []).map((row) => normalize(row.data as Projeto));
+
+  if (filters?.destaque !== undefined) {
+    projetos = projetos.filter((p) => p.destaque === filters.destaque);
+  }
+
+  // Ordena por criadoEm decrescente
+  projetos.sort(
+    (a, b) => new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime()
+  );
+
+  return projetos;
 }
 
-export function remove(slug: string): boolean {
-  const all = readFile();
-  const filtered = all.filter((p) => p.slug !== slug);
-  if (filtered.length === all.length) return false;
-  writeFile(filtered);
-  return true;
+export async function getBySlug(slug: string): Promise<Projeto | undefined> {
+  const { data, error } = await supabase
+    .from("projetos")
+    .select("data")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error) throw new Error(`Erro ao buscar projeto: ${error.message}`);
+  return data ? normalize(data.data as Projeto) : undefined;
+}
+
+export async function create(
+  input: Omit<Projeto, "criadoEm"> &
+    Partial<Pick<Projeto, "festivais" | "premios" | "mostrarFestivais" | "mostrarPremios">>
+): Promise<Projeto> {
+  const novo: Projeto = { ...input, criadoEm: new Date().toISOString() };
+  const { error } = await supabase
+    .from("projetos")
+    .insert({ slug: novo.slug, data: novo });
+  if (error) throw new Error(`Erro ao criar projeto: ${error.message}`);
+  return novo;
+}
+
+export async function update(
+  slug: string,
+  input: Partial<Projeto>
+): Promise<Projeto | null> {
+  const current = await getBySlug(slug);
+  if (!current) return null;
+  const updated = { ...current, ...input };
+  const { error } = await supabase
+    .from("projetos")
+    .update({ data: updated })
+    .eq("slug", slug);
+  if (error) throw new Error(`Erro ao atualizar projeto: ${error.message}`);
+  return updated;
+}
+
+export async function remove(slug: string): Promise<boolean> {
+  const { error, count } = await supabase
+    .from("projetos")
+    .delete({ count: "exact" })
+    .eq("slug", slug);
+  if (error) throw new Error(`Erro ao remover projeto: ${error.message}`);
+  return (count ?? 0) > 0;
 }

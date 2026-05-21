@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { supabase } from "./supabase";
 
 export interface Categoria {
   id: string;
@@ -8,53 +7,58 @@ export interface Categoria {
   slug: string;
 }
 
-const filePath = path.join(process.cwd(), "data", "categorias.json");
-
-function readFile(): Categoria[] {
-  const raw = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(raw) as Categoria[];
+export async function getAll(): Promise<Categoria[]> {
+  const { data, error } = await supabase
+    .from("categorias")
+    .select("data");
+  if (error) throw new Error(`Erro ao buscar categorias: ${error.message}`);
+  return (data ?? []).map((row) => row.data as Categoria);
 }
 
-function writeFile(data: Categoria[]) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+export async function getBySlug(slug: string): Promise<Categoria | undefined> {
+  const all = await getAll();
+  return all.find((c) => c.slug === slug);
 }
 
-export function getAll(): Categoria[] {
-  return readFile();
+export async function getById(id: string): Promise<Categoria | undefined> {
+  const { data, error } = await supabase
+    .from("categorias")
+    .select("data")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(`Erro ao buscar categoria: ${error.message}`);
+  return data ? (data.data as Categoria) : undefined;
 }
 
-export function getBySlug(slug: string): Categoria | undefined {
-  return readFile().find((c) => c.slug === slug);
+export async function create(input: Omit<Categoria, "id">): Promise<Categoria> {
+  const nova: Categoria = { ...input, id: `cat-${Date.now()}` };
+  const { error } = await supabase
+    .from("categorias")
+    .insert({ id: nova.id, data: nova });
+  if (error) throw new Error(`Erro ao criar categoria: ${error.message}`);
+  return nova;
 }
 
-export function getById(id: string): Categoria | undefined {
-  return readFile().find((c) => c.id === id);
+export async function update(
+  id: string,
+  input: Partial<Omit<Categoria, "id">>
+): Promise<Categoria | null> {
+  const current = await getById(id);
+  if (!current) return null;
+  const updated = { ...current, ...input };
+  const { error } = await supabase
+    .from("categorias")
+    .update({ data: updated })
+    .eq("id", id);
+  if (error) throw new Error(`Erro ao atualizar categoria: ${error.message}`);
+  return updated;
 }
 
-export function create(data: Omit<Categoria, "id">): Categoria {
-  const all = readFile();
-  const newCat: Categoria = {
-    ...data,
-    id: `cat-${Date.now()}`,
-  };
-  all.push(newCat);
-  writeFile(all);
-  return newCat;
-}
-
-export function update(id: string, data: Partial<Omit<Categoria, "id">>): Categoria | null {
-  const all = readFile();
-  const idx = all.findIndex((c) => c.id === id);
-  if (idx === -1) return null;
-  all[idx] = { ...all[idx], ...data };
-  writeFile(all);
-  return all[idx];
-}
-
-export function remove(id: string): boolean {
-  const all = readFile();
-  const filtered = all.filter((c) => c.id !== id);
-  if (filtered.length === all.length) return false;
-  writeFile(filtered);
-  return true;
+export async function remove(id: string): Promise<boolean> {
+  const { error, count } = await supabase
+    .from("categorias")
+    .delete({ count: "exact" })
+    .eq("id", id);
+  if (error) throw new Error(`Erro ao remover categoria: ${error.message}`);
+  return (count ?? 0) > 0;
 }

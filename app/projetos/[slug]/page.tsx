@@ -10,17 +10,18 @@ interface Props {
   params: { slug: string };
 }
 
-export default function ProjetoPage({ params }: Props) {
-  const projeto = getBySlug(params.slug);
-  if (!projeto || !projeto.publicado) notFound();
+export default async function ProjetoPage({ params }: Props) {
+  const [projeto, categorias] = await Promise.all([
+    getBySlug(params.slug),
+    getCategorias(),
+  ]);
 
-  const categorias = getCategorias();
+  if (!projeto || !projeto.publicado) notFound();
 
   return (
     <>
       <Nav />
       <main className="max-w-5xl mx-auto px-6 py-16">
-        {/* Breadcrumb */}
         <nav className="mb-8 text-sm text-[#9CA3AF]">
           <Link href="/projetos" className="hover:text-purple-600 transition-colors">Projetos</Link>
           <span className="mx-2">/</span>

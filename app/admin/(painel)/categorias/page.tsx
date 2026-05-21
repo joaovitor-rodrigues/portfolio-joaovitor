@@ -2,9 +2,11 @@ import { getAll as getCategorias } from "@/lib/categorias";
 import { getAll as getProjetos } from "@/lib/projetos";
 import AdminCategoriasClient from "./AdminCategoriasClient";
 
-export default function AdminCategoriasPage() {
-  const categorias = getCategorias();
-  const projetos = getProjetos();
+export default async function AdminCategoriasPage() {
+  const [categorias, projetos] = await Promise.all([
+    getCategorias(),
+    getProjetos(),
+  ]);
 
   const categoriasComContagem = categorias.map((cat) => ({
     ...cat,

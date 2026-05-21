@@ -1,8 +1,8 @@
 import { getAll as getCategorias } from "@/lib/categorias";
 import ProjectForm from "@/components/admin/ProjectForm";
 
-export default function NovoprojetoPage() {
-  const categorias = getCategorias();
+export default async function NovoprojetoPage() {
+  const categorias = await getCategorias();
   return (
     <div>
       <div className="mb-8">

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import * as categorias from "@/lib/categorias";
 
 export async function GET() {
-  return NextResponse.json(categorias.getAll());
+  const data = await categorias.getAll();
+  return NextResponse.json(data);
 }
 
 export async function POST(request: NextRequest) {
@@ -13,16 +14,18 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
   if (!body.nome || !body.slug) {
-    return NextResponse.json({ error: "Nome e slug são obrigatórios" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Nome e slug são obrigatórios" },
+      { status: 400 }
+    );
   }
 
-  const all = categorias.getAll();
-  const slugExists = all.some((c) => c.slug === body.slug);
-  if (slugExists) {
+  const all = await categorias.getAll();
+  if (all.some((c) => c.slug === body.slug)) {
     return NextResponse.json({ error: "Slug já existe" }, { status: 400 });
   }
 
-  const nova = categorias.create({
+  const nova = await categorias.create({
     nome: body.nome,
     cor: body.cor || "#7C3AED",
     slug: body.slug,

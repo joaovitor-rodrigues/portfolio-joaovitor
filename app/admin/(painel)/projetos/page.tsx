@@ -3,9 +3,11 @@ import { getAll as getProjetos } from "@/lib/projetos";
 import { getAll as getCategorias } from "@/lib/categorias";
 import AdminProjetosClient from "./AdminProjetosClient";
 
-export default function AdminProjetosPage() {
-  const projetos = getProjetos();
-  const categorias = getCategorias();
+export default async function AdminProjetosPage() {
+  const [projetos, categorias] = await Promise.all([
+    getProjetos(),
+    getCategorias(),
+  ]);
 
   return (
     <div>

@@ -5,7 +5,7 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const projeto = projetos.getBySlug(params.slug);
+  const projeto = await projetos.getBySlug(params.slug);
   if (!projeto) {
     return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
   }
@@ -22,7 +22,7 @@ export async function PUT(
   }
 
   const body = await request.json();
-  const updated = projetos.update(params.slug, {
+  const updated = await projetos.update(params.slug, {
     ...body,
     ano: Number(body.ano),
     formato: Array.isArray(body.formato) ? body.formato : [],
@@ -44,7 +44,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const ok = projetos.remove(params.slug);
+  const ok = await projetos.remove(params.slug);
   if (!ok) {
     return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
   }

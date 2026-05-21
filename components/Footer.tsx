@@ -1,13 +1,11 @@
 import { get as getContato } from "@/lib/contato";
 import { TIPOS_LINK } from "@/lib/contatoIcons";
 
-export default function Footer() {
-  const contato = getContato();
+export default async function Footer() {
+  const contato = await getContato();
 
-  // Exibe no rodapé todos os links exceto e-mail
   const socialLinks = contato.links.filter((l) => l.tipo !== "email");
 
-  // Usa o label do tipo como texto (ex: "Instagram", "LinkedIn")
   function tipoLabel(tipo: string) {
     return TIPOS_LINK.find((t) => t.value === tipo)?.label ?? tipo;
   }

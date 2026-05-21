@@ -1,8 +1,8 @@
 import { get } from "@/lib/site";
 import AdminSiteClient from "./AdminSiteClient";
 
-export default function AdminSitePage() {
-  const data = get();
+export default async function AdminSitePage() {
+  const data = await get();
   return (
     <div>
       <div className="mb-8">

@@ -1,8 +1,8 @@
 import { get } from "@/lib/sobre";
 import AdminSobreClient from "./AdminSobreClient";
 
-export default function AdminSobrePage() {
-  const data = get();
+export default async function AdminSobrePage() {
+  const data = await get();
   return (
     <div>
       <div className="mb-8">

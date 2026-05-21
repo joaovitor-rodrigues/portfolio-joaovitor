@@ -4,8 +4,8 @@ import { get } from "@/lib/sobre";
 import { resolveImageUrl } from "@/lib/gdrive";
 import { applyCropStyles } from "@/lib/fotoCrop";
 
-export default function SobrePage() {
-  const sobre = get();
+export default async function SobrePage() {
+  const sobre = await get();
 
   return (
     <>

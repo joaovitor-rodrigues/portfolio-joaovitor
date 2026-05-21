@@ -1,9 +1,11 @@
 import { getAll as getProjetos } from "@/lib/projetos";
 import { getAll as getCategorias } from "@/lib/categorias";
 
-export default function AdminDashboard() {
-  const projetos = getProjetos();
-  const categorias = getCategorias();
+export default async function AdminDashboard() {
+  const [projetos, categorias] = await Promise.all([
+    getProjetos(),
+    getCategorias(),
+  ]);
   const publicados = projetos.filter((p) => p.publicado).length;
   const destaques = projetos.filter((p) => p.destaque).length;
 
@@ -35,7 +37,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick links */}
-      <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
+      <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 mb-4">
         <h2 className="text-sm font-semibold text-[#374151] mb-4">Ações rápidas</h2>
         <div className="flex flex-wrap gap-3">
           <a

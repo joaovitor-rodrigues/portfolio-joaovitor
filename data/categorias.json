@@ -1,0 +1,26 @@
+[
+  {
+    "id": "cat-1",
+    "nome": "Fotografia",
+    "cor": "#ff0000",
+    "slug": "fotografia"
+  },
+  {
+    "id": "cat-2",
+    "nome": "Direção",
+    "cor": "#2563EB",
+    "slug": "direcao"
+  },
+  {
+    "id": "cat-3",
+    "nome": "Roteiro",
+    "cor": "#8000ff",
+    "slug": "edicao"
+  },
+  {
+    "nome": "Produção",
+    "cor": "#ff8800",
+    "slug": "teste",
+    "id": "cat-1779299346958"
+  }
+]

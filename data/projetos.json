@@ -1,0 +1,119 @@
+[
+  {
+    "festivais": [],
+    "premios": [],
+    "mostrarFestivais": true,
+    "mostrarPremios": true,
+    "categorias": [
+      "cat-2",
+      "cat-3"
+    ],
+    "slug": "compendium-maleficarum-o-filho-prodigo",
+    "titulo": "Compendium Maleficarum: O Filho Pródigo",
+    "funcaoRealizada": "Diretor, Roteirista",
+    "formato": [
+      "Curta-metragem"
+    ],
+    "ano": 2026,
+    "duracao": "13 min",
+    "genero": "Horror, Comédia",
+    "categoriaId": "cat-2",
+    "descricaoCurta": "Apenas um domingo à noite.",
+    "descricaoLonga": "Um conto de um antigo livro é apresentado por uma figura misteriosa. Na história, um estranho visitante aparece em uma igreja pela madrugada. O problema é que… ele trouxe companhia.",
+    "thumb": "https://drive.google.com/file/d/1mex5A7Ws8OxeoQTX_VO0mmstE9g6YB8L/view?usp=sharing",
+    "galeria": [
+      "https://drive.google.com/file/d/1ibwyQV3pDi_3hCRIEWDes9n4Ew29VCnW/view?usp=sharing",
+      "https://drive.google.com/file/d/1Kh_uudbh11xmMEA-4PNmV5cVVVcDq_dT/view?usp=sharing",
+      "https://drive.google.com/file/d/1X1odC_zdbSYBdAb2L5lmhCI4iMjTpDsU/view?usp=sharing",
+      "https://drive.google.com/file/d/17ArOHXXdsC6duAjGpyffR9LC0lRrHlxa/view?usp=sharing",
+      "https://drive.google.com/file/d/1SQ-U29laBO0h6FZVQCZ4Bfw95eYymthr/view?usp=drive_link",
+      "https://drive.google.com/file/d/13O3fKqgnGGG0FhjsLErZXrTzbHS-sdrd/view?usp=sharing",
+      "https://drive.google.com/file/d/1xh4oFDhUMQnqGRgfQKQTlKW02Z4fhnfl/view?usp=sharing"
+    ],
+    "videoUrl": "https://www.youtube.com/embed/OcUSsQn8J-4?si=hL59esZ483jpaXoS",
+    "destaque": true,
+    "publicado": true,
+    "criadoEm": "2026-05-20T20:19:35.187Z"
+  },
+  {
+    "festivais": [
+      {
+        "id": "f-1779389054589",
+        "nome": "VIII Mostra de Filmes Universitários de Gramado",
+        "edicao": "53º Festival de Cinema de Gramado / 2025",
+        "resultado": "Seleção Oficial"
+      },
+      {
+        "id": "f-1779389134056",
+        "nome": "Festival Internacional CINEMAZ",
+        "edicao": "2025",
+        "resultado": "Seleção Oficial"
+      }
+    ],
+    "premios": [
+      {
+        "id": "p-1779389212542",
+        "nome": "Melhor Trilha Sonora",
+        "categoria": "",
+        "ano": "2025",
+        "festivalId": "f-1779389134056"
+      },
+      {
+        "id": "p-1779389255808",
+        "nome": "Revelação",
+        "categoria": "",
+        "ano": "2025",
+        "festivalId": "f-1779389134056"
+      }
+    ],
+    "mostrarFestivais": true,
+    "mostrarPremios": true,
+    "categorias": [
+      "cat-1779299346958"
+    ],
+    "slug": "na-sombra-do-set",
+    "titulo": "Na Sombra do Set",
+    "funcaoRealizada": "Produtor",
+    "formato": [
+      "Curta-metragem"
+    ],
+    "ano": 2024,
+    "duracao": "15 min",
+    "genero": "Documentário",
+    "descricaoCurta": "",
+    "descricaoLonga": "Jogados para as sombras, cineastas com deficiência têm sua capacidade negada e são obrigados a criar suas próprias oportunidades dentro do cinema.",
+    "thumb": "",
+    "galeria": [],
+    "videoUrl": "",
+    "destaque": true,
+    "publicado": true,
+    "criadoEm": "2026-05-21T18:43:35.850Z"
+  },
+  {
+    "festivais": [],
+    "premios": [],
+    "mostrarFestivais": true,
+    "mostrarPremios": true,
+    "categorias": [
+      "cat-1"
+    ],
+    "slug": "ave-maria",
+    "titulo": "Ave Maria",
+    "funcaoRealizada": "Diretor de Fotografia",
+    "formato": [
+      "Curta-metragem",
+      "Stop-Motion"
+    ],
+    "ano": 2023,
+    "duracao": "2 min",
+    "genero": "Comédia",
+    "descricaoCurta": "",
+    "descricaoLonga": "Um pombinho encontra uma estranha substância e tenta a sorte experimentando a nova iguaria, afinal, por que não? Pombos já são estranhos, o que de mal poderia acontecer?",
+    "thumb": "",
+    "galeria": [],
+    "videoUrl": "https://www.youtube.com/embed/DWA2myaaNSU?si=InttRwIkk5tnJqp_",
+    "destaque": false,
+    "publicado": true,
+    "criadoEm": "2026-05-21T19:12:43.250Z"
+  }
+]

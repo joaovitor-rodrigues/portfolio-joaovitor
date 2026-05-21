@@ -1,0 +1,24 @@
+{
+  "intro": "Tem um projeto em mente? Vamos conversar sobre como posso ajudar a dar vida às suas ideias.",
+  "links": [
+    {
+      "id": "link-1",
+      "tipo": "email",
+      "label": "jvor.rodrigues@gmail.com",
+      "url": "mailto:jvor.rodrigues@gmail.com"
+    },
+    {
+      "id": "link-1779383518494",
+      "tipo": "linkedin",
+      "label": "João Vitor Rodrigues",
+      "url": "https://www.linkedin.com/in/jo%C3%A3o-vitor-rodrigues-361145192/"
+    },
+    {
+      "id": "link-2",
+      "tipo": "instagram",
+      "label": "@joaovitores",
+      "url": "https://instagram.com/joaovitores"
+    }
+  ],
+  "formspreeId": "YOUR_FORM_ID"
+}

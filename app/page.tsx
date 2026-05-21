@@ -1,101 +1,134 @@
-import Image from "next/image";
+import Link from "next/link";
+import type { Metadata } from "next";
+import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
+import ProjectCard from "@/components/ProjectCard";
+import { getAll as getProjetos } from "@/lib/projetos";
+import { getAll as getCategorias } from "@/lib/categorias";
+import { get as getSite } from "@/lib/site";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const site = getSite();
+  return {
+    title: site.metaTitle,
+    description: site.metaDescription,
+  };
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const site = getSite();
+  const allProjetos = getProjetos();
+  const categorias = getCategorias();
+  const publicados = allProjetos.filter((p) => p.publicado);
+  const destaques = publicados.filter((p) => p.destaque);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+  // Projetos por categoria
+  const categoriasComCount = categorias
+    .map((cat) => ({
+      ...cat,
+      count: publicados.filter((p) => p.categorias?.includes(cat.id)).length,
+    }))
+    .filter((cat) => cat.count > 0)
+    .sort((a, b) => b.count - a.count);
+
+  // Suporta quebra de linha com \n no título
+  const heroLinhas = site.heroTitulo.split("\\n").join("\n").split("\n");
+
+  return (
+    <>
+      <Nav />
+      <main>
+        {/* Hero */}
+        <section className="pt-[120px] pb-24 px-6 max-w-6xl mx-auto">
+          <div className="max-w-2xl">
+            <h1 className="font-display text-5xl sm:text-6xl font-normal text-[#111118] leading-tight">
+              {heroLinhas.map((linha, i) => (
+                <span key={i}>
+                  {linha}
+                  {i < heroLinhas.length - 1 && <br />}
+                </span>
+              ))}
+            </h1>
+            <p className="mt-6 text-lg text-[#6B7280] leading-relaxed max-w-lg">
+              {site.heroSubtitulo}
+            </p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link
+                href="/projetos"
+                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
+              >
+                {site.heroCta1Label}
+              </Link>
+              <Link
+                href="/sobre"
+                className="px-6 py-3 border border-[#E5E7EB] text-[#374151] hover:border-purple-300 hover:text-purple-600 font-medium rounded-lg transition-colors"
+              >
+                {site.heroCta2Label}
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Projetos em Destaque */}
+        {destaques.length > 0 && (
+          <section className="px-6 pb-24 max-w-6xl mx-auto">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="font-display text-3xl font-normal text-[#111118]">Projetos em Destaque</h2>
+              <Link href="/projetos" className="text-sm text-purple-600 hover:text-purple-700 transition-colors">
+                Ver todos →
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {destaques.slice(0, 3).map((projeto) => (
+                <ProjectCard key={projeto.slug} projeto={projeto} categorias={categorias} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Categorias */}
+        {categoriasComCount.length > 0 && (
+          <section className="px-6 pb-24 max-w-6xl mx-auto">
+            <h2 className="font-display text-3xl font-normal text-[#111118] mb-8">Áreas de Atuação</h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {categoriasComCount.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/projetos?categoria=${cat.slug}`}
+                  style={{ "--accent": cat.cor } as React.CSSProperties}
+                  className="group relative flex flex-col justify-between gap-8 p-7 rounded-2xl border-2 border-[var(--accent)] bg-white hover:bg-[var(--accent)] transition-all duration-300"
+                >
+                  {/* Dot + contagem */}
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="w-3 h-3 rounded-full transition-colors duration-300 group-hover:bg-white"
+                      style={{ backgroundColor: cat.cor }}
+                    />
+                    <span className="text-xs font-medium tabular-nums text-[var(--accent)] group-hover:text-white/80 transition-colors duration-300">
+                      {cat.count} {cat.count === 1 ? "projeto" : "projetos"}
+                    </span>
+                  </div>
+
+                  {/* Nome + seta */}
+                  <div className="flex items-end justify-between gap-4">
+                    <h3 className="font-display text-2xl sm:text-3xl font-normal text-[#111118] group-hover:text-white transition-colors duration-300 leading-tight">
+                      {cat.nome}
+                    </h3>
+                    <svg
+                      className="w-5 h-5 flex-shrink-0 mb-0.5 text-[var(--accent)] group-hover:text-white group-hover:translate-x-1 transition-all duration-300"
+                      fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      <Footer />
+    </>
   );
 }

@@ -1,0 +1,45 @@
+{
+  "titulo": "Olá, sou João Vitor.",
+  "paragrafos": [
+    "Sou um Diretor de Fotografia e cineasta baseado em São Paulo, com mais de 8 anos de experiência criando narrativas visuais para cinema, publicidade e projetos independentes.",
+    "Meu trabalho é guiado pela crença de que cada imagem deve contar uma história. Seja em um curta-metragem premiado, em uma campanha publicitária ou em um ensaio documental, busco sempre encontrar a luz e o enquadramento que revela a verdade emocional de cada momento.",
+    "Formado em Cinema pela ECA-USP, já colaborei com marcas como Estúdio Vértice, Cinelab e a ONG Verde Sempre, além de ter exibido trabalhos no Festival de Cinema Independente de Brasília, na Mostra Internacional de São Paulo e em festivais internacionais.",
+    "Estou sempre aberto a novos projetos e colaborações. Se você tem uma ideia e precisa de alguém para dar vida a ela visualmente, vamos conversar."
+  ],
+  "habilidades": [
+    "Direção de Fotografia",
+    "Direção de Arte",
+    "Color Grading",
+    "Edição de Vídeo",
+    "Iluminação Cinematográfica",
+    "Fotografia Documental",
+    "Retratos",
+    "Capturas Aéreas",
+    "Fotografia Comercial",
+    "Narrativa Visual"
+  ],
+  "stats": [
+    {
+      "valor": "8+",
+      "label": "Anos de experiência"
+    },
+    {
+      "valor": "50+",
+      "label": "Projetos realizados"
+    },
+    {
+      "valor": "12",
+      "label": "Prêmios recebidos"
+    }
+  ],
+  "fotoUrl": "https://drive.google.com/file/d/1Fm6gBIty5831fKrFU2NoNkiSvpa8xkyE/view?usp=sharing",
+  "mostrarBio": true,
+  "mostrarHabilidades": false,
+  "mostrarStats": false,
+  "mostrarFoto": true,
+  "fotoCrop": {
+    "x": 79.09967845659165,
+    "y": 100,
+    "scale": 1.26
+  }
+}

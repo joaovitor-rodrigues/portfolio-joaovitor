@@ -27,7 +27,8 @@ export async function update(input: Partial<SiteConfig>): Promise<SiteConfig> {
   const updated = { ...current, ...input };
   const { error } = await getSupabase()
     .from("config")
-    .upsert({ key: KEY, value: updated });
+    .update({ value: updated })
+    .eq("key", KEY);
   if (error) throw new Error(`Erro ao salvar site: ${error.message}`);
   return updated;
 }

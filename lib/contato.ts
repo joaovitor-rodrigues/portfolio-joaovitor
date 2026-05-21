@@ -42,7 +42,8 @@ export async function update(input: Partial<ContatoConfig>): Promise<ContatoConf
   const updated = { ...current, ...input };
   const { error } = await getSupabase()
     .from("config")
-    .upsert({ key: KEY, value: updated });
+    .update({ value: updated })
+    .eq("key", KEY);
   if (error) throw new Error(`Erro ao salvar contato: ${error.message}`);
   return updated;
 }

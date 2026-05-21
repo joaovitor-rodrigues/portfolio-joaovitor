@@ -41,7 +41,8 @@ export async function update(input: Partial<SobreConfig>): Promise<SobreConfig> 
   const updated = { ...current, ...input };
   const { error } = await getSupabase()
     .from("config")
-    .upsert({ key: KEY, value: updated });
+    .update({ value: updated })
+    .eq("key", KEY);
   if (error) throw new Error(`Erro ao salvar sobre: ${error.message}`);
   return updated;
 }

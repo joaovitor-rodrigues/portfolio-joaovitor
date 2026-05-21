@@ -34,7 +34,7 @@ export default function ObrigadoPage() {
             Mensagem recebida!
           </h1>
           <p className="text-[#6B7280] mb-10 leading-relaxed">
-            Obrigado pelo contato. Assim que possível entrarei em resposta.
+            Assim que possível retorno o contato, obrigado!
           </p>
 
           <Link

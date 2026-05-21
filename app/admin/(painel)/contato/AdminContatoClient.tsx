@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ContatoConfig, ContatoLink, TipoLink } from "@/lib/contato";
+import type { ContatoConfig, ContatoLink } from "@/lib/contato";
 import { TIPOS_LINK, ContatoIcon } from "@/lib/contatoIcons";
 
 interface Props {
@@ -109,7 +109,7 @@ export default function AdminContatoClient({ initialData }: Props) {
 
         {form.links.length === 0 && (
           <div className="text-center py-8 text-sm text-[#9CA3AF] border border-dashed border-[#E5E7EB] rounded-lg">
-            Nenhum link adicionado. Clique em "Adicionar link" para começar.
+            Nenhum link adicionado. Clique em &quot;Adicionar link&quot; para começar.
           </div>
         )}
 

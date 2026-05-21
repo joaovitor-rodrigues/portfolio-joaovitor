@@ -49,12 +49,12 @@ function readFile(): Projeto[] {
   // garante compatibilidade com projetos criados antes desses campos existirem
   return data.map((p) => {
     const base = {
-      festivais: [],
-      premios: [],
-      mostrarFestivais: true,
-      mostrarPremios: true,
-      categorias: [],
       ...p,
+      festivais: p.festivais ?? [],
+      premios: p.premios ?? [],
+      mostrarFestivais: p.mostrarFestivais ?? true,
+      mostrarPremios: p.mostrarPremios ?? true,
+      categorias: p.categorias ?? [],
     };
     // migra categoriaId legado → categorias[]
     if (base.categorias.length === 0 && base.categoriaId) {

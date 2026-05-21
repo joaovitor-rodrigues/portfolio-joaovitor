@@ -63,6 +63,10 @@ export async function POST(request: NextRequest) {
     videoUrl: body.videoUrl || "",
     destaque: Boolean(body.destaque),
     publicado: Boolean(body.publicado),
+    festivais: Array.isArray(body.festivais) ? body.festivais : [],
+    premios: Array.isArray(body.premios) ? body.premios : [],
+    mostrarFestivais: body.mostrarFestivais !== false,
+    mostrarPremios: body.mostrarPremios !== false,
   });
 
   return NextResponse.json(novo, { status: 201 });

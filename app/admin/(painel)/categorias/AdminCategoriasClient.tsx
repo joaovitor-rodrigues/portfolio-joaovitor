@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Categoria } from "@/lib/categorias";
 
 interface CategoriaComContagem extends Categoria {
@@ -24,6 +25,7 @@ function slugify(text: string): string {
 
 // ─── Formulário de nova categoria ───────────────────────────────────────────
 function NovaCategoria({ onCreated }: { onCreated: (cat: CategoriaComContagem) => void }) {
+  const router = useRouter();
   const [nome, setNome] = useState("");
   const [cor, setCor] = useState("#7C3AED");
   const [slug, setSlug] = useState("");
@@ -51,6 +53,7 @@ function NovaCategoria({ onCreated }: { onCreated: (cat: CategoriaComContagem) =
       if (!res.ok) throw new Error((await res.json()).error || "Erro ao criar");
       const nova: Categoria = await res.json();
       onCreated({ ...nova, count: 0 });
+      router.refresh();
       setNome(""); setCor("#7C3AED"); setSlug(""); setSlugManual(false);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao criar");
@@ -100,6 +103,7 @@ function CategoriaRow({
   onUpdated: (updated: Categoria) => void;
   onDeleted: (id: string) => void;
 }) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [nome, setNome] = useState(cat.nome);
   const [cor, setCor] = useState(cat.cor);
@@ -120,6 +124,7 @@ function CategoriaRow({
       });
       if (!res.ok) throw new Error((await res.json()).error || "Erro ao salvar");
       onUpdated(await res.json());
+      router.refresh();
       setEditing(false);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao salvar");
@@ -144,6 +149,7 @@ function CategoriaRow({
       const res = await fetch(`/api/categorias/${cat.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error((await res.json()).error || "Erro ao deletar");
       onDeleted(cat.id);
+      router.refresh();
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Erro ao deletar");
       setDeleting(false);

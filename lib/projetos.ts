@@ -27,6 +27,8 @@ export interface MembroElenco {
   id: string;
   ator: string;
   personagem: string;
+  fotoUrl?: string;
+  instagramUrl?: string;
 }
 
 export interface Projeto {

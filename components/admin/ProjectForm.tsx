@@ -826,55 +826,73 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
               onDragStart={() => onElencoDragStart(idx)}
               onDragOver={(e) => onElencoDragOver(e, idx)}
               onDrop={onElencoDrop}
-              className="flex gap-2 items-center bg-[#F8F8FA] p-3 rounded-lg border border-[#E5E7EB]"
+              className="flex gap-2 items-start bg-[#F8F8FA] p-3 rounded-lg border border-[#E5E7EB]"
             >
-              {/* Drag handle */}
-              <div className="cursor-grab active:cursor-grabbing p-1 text-[#D1D5DB] hover:text-[#9CA3AF] transition-colors flex-shrink-0">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
-                  <circle cx="5" cy="4" r="1.2" /><circle cx="5" cy="8" r="1.2" /><circle cx="5" cy="12" r="1.2" />
-                  <circle cx="11" cy="4" r="1.2" /><circle cx="11" cy="8" r="1.2" /><circle cx="11" cy="12" r="1.2" />
-                </svg>
-              </div>
-
-              {/* Ator */}
-              <input
-                type="text"
-                value={m.ator}
-                onChange={(e) => setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, ator: e.target.value } : x))}
-                placeholder="Nome do ator"
-                className="flex-1 border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-              />
-
-              {/* Personagem */}
-              <input
-                type="text"
-                value={m.personagem}
-                onChange={(e) => setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, personagem: e.target.value } : x))}
-                placeholder="Nome do personagem"
-                className="flex-1 border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-              />
-
-              {/* Up / Down */}
-              <div className="flex flex-col gap-0.5 flex-shrink-0">
+              {/* Drag handle + setas */}
+              <div className="flex flex-col items-center gap-0.5 flex-shrink-0 pt-1">
+                <div className="cursor-grab active:cursor-grabbing p-1 text-[#D1D5DB] hover:text-[#9CA3AF] transition-colors">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+                    <circle cx="5" cy="4" r="1.2" /><circle cx="5" cy="8" r="1.2" /><circle cx="5" cy="12" r="1.2" />
+                    <circle cx="11" cy="4" r="1.2" /><circle cx="11" cy="8" r="1.2" /><circle cx="11" cy="12" r="1.2" />
+                  </svg>
+                </div>
                 <button type="button" onClick={() => moveElencoItem(idx, idx - 1)} disabled={idx === 0}
-                  className="p-1 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  className="p-0.5 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
                   </svg>
                 </button>
                 <button type="button" onClick={() => moveElencoItem(idx, idx + 1)} disabled={idx === elenco.length - 1}
-                  className="p-1 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  className="p-0.5 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
+              </div>
+
+              {/* Campos */}
+              <div className="flex-1 grid gap-2">
+                {/* Ator + Personagem */}
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    value={m.ator}
+                    onChange={(e) => setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, ator: e.target.value } : x))}
+                    placeholder="Nome do ator"
+                    className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                  />
+                  <input
+                    type="text"
+                    value={m.personagem}
+                    onChange={(e) => setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, personagem: e.target.value } : x))}
+                    placeholder="Nome do personagem"
+                    className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                  />
+                </div>
+                {/* Instagram + Foto */}
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    value={m.instagramUrl ?? ""}
+                    onChange={(e) => setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, instagramUrl: e.target.value || undefined } : x))}
+                    placeholder="@instagram (opcional)"
+                    className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                  />
+                  <input
+                    type="url"
+                    value={m.fotoUrl ?? ""}
+                    onChange={(e) => setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, fotoUrl: e.target.value || undefined } : x))}
+                    placeholder="URL da foto (opcional)"
+                    className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                  />
+                </div>
               </div>
 
               {/* Remover */}
               <button
                 type="button"
                 onClick={() => setElenco((prev) => prev.filter((_, i) => i !== idx))}
-                className="px-2.5 py-2 text-[#EF4444] hover:bg-red-50 rounded-lg text-sm transition-colors border border-[#E5E7EB] bg-white flex-shrink-0"
+                className="px-2.5 py-2 text-[#EF4444] hover:bg-red-50 rounded-lg text-sm transition-colors border border-[#E5E7EB] bg-white flex-shrink-0 mt-0.5"
               >✕</button>
             </div>
           ))}

@@ -6,11 +6,13 @@ import { Projeto, Festival, Premio, MembroElenco } from "@/lib/projetos";
 import { resolveImageUrl } from "@/lib/gdrive";
 import { Categoria } from "@/lib/categorias";
 import { FuncaoEquipe } from "@/lib/funcoes";
+import { Pessoa } from "@/lib/pessoas";
 
 interface Props {
   projeto?: Projeto;
   categorias: Categoria[];
   funcoes: FuncaoEquipe[];
+  pessoas?: Pessoa[];
   mode: "new" | "edit";
 }
 
@@ -25,7 +27,7 @@ function slugify(text: string): string {
     .replace(/-+/g, "-");
 }
 
-export default function ProjectForm({ projeto, categorias, funcoes, mode }: Props) {
+export default function ProjectForm({ projeto, categorias, funcoes, pessoas = [], mode }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -119,6 +121,7 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
     nome: string;
     instagramUrl: string;
     fotoUrl: string;
+    pessoaId?: string;
   };
 
   function buildEquipeRows(): EquipeRow[] {
@@ -134,6 +137,7 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
           nome: m.nome,
           instagramUrl: m.instagramUrl ?? "",
           fotoUrl: m.fotoUrl ?? "",
+          pessoaId: m.pessoaId,
         });
       }
     }
@@ -158,6 +162,77 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
     setEquipeRows((prev) => prev.filter((_, i) => i !== idx));
   }
   const [mostrarEquipe, setMostrarEquipe] = useState(projeto?.mostrarEquipe ?? true);
+
+  // ── Picker de Pessoa ───────────────────────────────────────────────────────
+  // popup para selecionar uma Pessoa cadastrada e preencher campos
+  const [pessoaPickerTarget, setPessoaPickerTarget] = useState<
+    | { section: "elenco"; idx: number }
+    | { section: "equipe"; idx: number; funcaoId: string }
+    | null
+  >(null);
+  const [pessoaBusca, setPessoaBusca] = useState("");
+
+  function pessoasSugeridas(): Pessoa[] {
+    if (!pessoaPickerTarget) return [];
+    const base =
+      pessoaPickerTarget.section === "elenco"
+        ? pessoas.filter((p) => p.tipo === "elenco" || p.tipo === "ambos")
+        : pessoas.filter(
+            (p) =>
+              (p.tipo === "equipe" || p.tipo === "ambos") &&
+              (p.funcaoIds.length === 0 ||
+                p.funcaoIds.includes((pessoaPickerTarget as { funcaoId: string }).funcaoId))
+          );
+    if (!pessoaBusca.trim()) return base;
+    return base.filter((p) =>
+      p.nome.toLowerCase().includes(pessoaBusca.toLowerCase())
+    );
+  }
+
+  function applyPessoa(pessoa: Pessoa) {
+    if (!pessoaPickerTarget) return;
+    if (pessoaPickerTarget.section === "elenco") {
+      const { idx } = pessoaPickerTarget;
+      setElenco((prev) =>
+        prev.map((x, i) =>
+          i === idx
+            ? {
+                ...x,
+                pessoaId: pessoa.id,
+                ator: pessoa.nome,
+                fotoUrl: pessoa.fotoUrl ?? x.fotoUrl,
+                instagramUrl: pessoa.instagramUrl ?? x.instagramUrl,
+              }
+            : x
+        )
+      );
+    } else {
+      const { idx } = pessoaPickerTarget;
+      setEquipeRows((prev) =>
+        prev.map((x, i) =>
+          i === idx
+            ? {
+                ...x,
+                pessoaId: pessoa.id,
+                nome: pessoa.nome,
+                fotoUrl: pessoa.fotoUrl ?? x.fotoUrl,
+                instagramUrl: pessoa.instagramUrl ?? x.instagramUrl,
+              }
+            : x
+        )
+      );
+    }
+    setPessoaPickerTarget(null);
+    setPessoaBusca("");
+  }
+
+  function unlinkPessoa(section: "elenco" | "equipe", idx: number) {
+    if (section === "elenco") {
+      setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, pessoaId: undefined } : x));
+    } else {
+      setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, pessoaId: undefined } : x));
+    }
+  }
 
   // Drag-to-reorder equipe
   const dragEquipeIdx = useRef<number | null>(null);
@@ -292,12 +367,13 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
       mostrarElenco,
       equipe: equipeRows
         .filter((r) => r.nome.trim() !== "")
-        .map(({ funcaoId, nome, instagramUrl, fotoUrl }) => ({
+        .map(({ funcaoId, nome, instagramUrl, fotoUrl, pessoaId }) => ({
           id: funcaoId,
           funcaoId,
           nome: nome.trim(),
           instagramUrl: instagramUrl.trim() || undefined,
           fotoUrl: fotoUrl.trim() || undefined,
+          pessoaId: pessoaId || undefined,
         })),
       mostrarEquipe,
     };
@@ -864,15 +940,57 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
 
               {/* Campos */}
               <div className="flex-1 grid gap-2">
-                {/* Ator + Personagem */}
+                {/* Vínculo com Pessoa */}
+                {m.pessoaId ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                      🔗 Vinculado a Pessoas
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => unlinkPessoa("elenco", idx)}
+                      className="text-xs text-[#9CA3AF] hover:text-red-500 transition-colors underline"
+                    >
+                      Desvincular
+                    </button>
+                    <a
+                      href="/admin/pessoas"
+                      target="_blank"
+                      className="text-xs text-purple-600 hover:text-purple-700 underline"
+                    >
+                      Editar dados
+                    </a>
+                  </div>
+                ) : (
+                  pessoas.filter((p) => p.tipo === "elenco" || p.tipo === "ambos").length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => { setPessoaPickerTarget({ section: "elenco", idx }); setPessoaBusca(""); }}
+                      className="self-start text-xs text-purple-600 hover:text-purple-700 border border-purple-200 hover:border-purple-400 bg-purple-50 hover:bg-purple-100 rounded-md px-2 py-1 transition-colors"
+                    >
+                      🔗 Vincular a Pessoas
+                    </button>
+                  )
+                )}
+                {/* Ator: bloqueado se vinculado */}
                 <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="text"
-                    value={m.ator}
-                    onChange={(e) => setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, ator: e.target.value } : x))}
-                    placeholder="Nome do ator"
-                    className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-                  />
+                  {m.pessoaId ? (
+                    <div className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm bg-[#F8F8FA] text-[#374151] flex items-center gap-1.5">
+                      {m.fotoUrl && (
+                        <img src={m.fotoUrl} alt="" className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
+                      )}
+                      <span className="truncate">{m.ator || <span className="text-[#9CA3AF]">—</span>}</span>
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      value={m.ator}
+                      onChange={(e) => setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, ator: e.target.value } : x))}
+                      placeholder="Nome do ator"
+                      className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                    />
+                  )}
+                  {/* Personagem sempre editável */}
                   <input
                     type="text"
                     value={m.personagem}
@@ -881,23 +999,25 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
                     className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
                   />
                 </div>
-                {/* Instagram + Foto */}
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="text"
-                    value={m.instagramUrl ?? ""}
-                    onChange={(e) => setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, instagramUrl: e.target.value || undefined } : x))}
-                    placeholder="@instagram (opcional)"
-                    className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-                  />
-                  <input
-                    type="url"
-                    value={m.fotoUrl ?? ""}
-                    onChange={(e) => setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, fotoUrl: e.target.value || undefined } : x))}
-                    placeholder="URL da foto (opcional)"
-                    className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-                  />
-                </div>
+                {/* Instagram + Foto: bloqueados se vinculado */}
+                {!m.pessoaId && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={m.instagramUrl ?? ""}
+                      onChange={(e) => setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, instagramUrl: e.target.value || undefined } : x))}
+                      placeholder="@instagram (opcional)"
+                      className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                    />
+                    <input
+                      type="url"
+                      value={m.fotoUrl ?? ""}
+                      onChange={(e) => setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, fotoUrl: e.target.value || undefined } : x))}
+                      placeholder="URL da foto (opcional)"
+                      className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Remover */}
@@ -982,35 +1102,79 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
 
                     {/* Conteúdo */}
                     <div className="flex-1 grid gap-2">
-                      {/* Rótulo da função */}
-                      <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">
-                        {row.funcaoNome}
-                      </p>
-                      {/* Nome do profissional */}
-                      <input
-                        type="text"
-                        value={row.nome}
-                        onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, nome: e.target.value } : x))}
-                        placeholder="Nome do profissional"
-                        className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-                      />
-                      {/* Instagram + Foto */}
-                      <div className="grid grid-cols-2 gap-2">
+                      {/* Rótulo da função + vínculo */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">
+                          {row.funcaoNome}
+                        </p>
+                        {row.pessoaId ? (
+                          <>
+                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                              🔗 Vinculado a Pessoas
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => unlinkPessoa("equipe", idx)}
+                              className="text-xs text-[#9CA3AF] hover:text-red-500 transition-colors underline"
+                            >
+                              Desvincular
+                            </button>
+                            <a
+                              href="/admin/pessoas"
+                              target="_blank"
+                              className="text-xs text-purple-600 hover:text-purple-700 underline"
+                            >
+                              Editar dados
+                            </a>
+                          </>
+                        ) : (
+                          pessoas.filter((p) => p.tipo === "equipe" || p.tipo === "ambos").length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => { setPessoaPickerTarget({ section: "equipe", idx, funcaoId: row.funcaoId }); setPessoaBusca(""); }}
+                              className="text-xs text-purple-600 hover:text-purple-700 border border-purple-200 hover:border-purple-400 bg-purple-50 hover:bg-purple-100 rounded-md px-2 py-0.5 transition-colors"
+                            >
+                              🔗 Vincular a Pessoas
+                            </button>
+                          )
+                        )}
+                      </div>
+                      {/* Nome do profissional: bloqueado se vinculado */}
+                      {row.pessoaId ? (
+                        <div className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm bg-[#F8F8FA] text-[#374151] flex items-center gap-2">
+                          {row.fotoUrl && (
+                            <img src={row.fotoUrl} alt="" className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
+                          )}
+                          <span className="truncate">{row.nome || <span className="text-[#9CA3AF]">—</span>}</span>
+                        </div>
+                      ) : (
                         <input
                           type="text"
-                          value={row.instagramUrl}
-                          onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, instagramUrl: e.target.value } : x))}
-                          placeholder="@instagram (opcional)"
-                          className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                          value={row.nome}
+                          onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, nome: e.target.value } : x))}
+                          placeholder="Nome do profissional"
+                          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
                         />
-                        <input
-                          type="url"
-                          value={row.fotoUrl}
-                          onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, fotoUrl: e.target.value } : x))}
-                          placeholder="URL da foto (opcional)"
-                          className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-                        />
-                      </div>
+                      )}
+                      {/* Instagram + Foto: bloqueados se vinculado */}
+                      {!row.pessoaId && (
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={row.instagramUrl}
+                            onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, instagramUrl: e.target.value } : x))}
+                            placeholder="@instagram (opcional)"
+                            className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                          />
+                          <input
+                            type="url"
+                            value={row.fotoUrl}
+                            onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, fotoUrl: e.target.value } : x))}
+                            placeholder="URL da foto (opcional)"
+                            className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                          />
+                        </div>
+                      )}
                     </div>
 
                     {/* Remover */}
@@ -1095,6 +1259,95 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
           Cancelar
         </button>
       </div>
+
+      {/* ── Picker de Pessoa (modal) ────────────────────────────────────────── */}
+      {pessoaPickerTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          onClick={() => setPessoaPickerTarget(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-5 pt-5 pb-3 border-b border-[#E5E7EB]">
+              <h3 className="text-sm font-semibold text-[#111118]">
+                Selecionar pessoa cadastrada
+              </h3>
+              <p className="text-xs text-[#9CA3AF] mt-0.5">
+                Nome, foto e Instagram serão preenchidos automaticamente.
+              </p>
+              <input
+                type="text"
+                value={pessoaBusca}
+                onChange={(e) => setPessoaBusca(e.target.value)}
+                placeholder="Buscar pelo nome…"
+                autoFocus
+                className="mt-3 w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+              />
+            </div>
+
+            {/* Lista */}
+            <ul className="max-h-72 overflow-y-auto divide-y divide-[#F3F4F6]">
+              {pessoasSugeridas().length === 0 ? (
+                <li className="px-5 py-8 text-center text-xs text-[#9CA3AF]">
+                  Nenhuma pessoa encontrada.{" "}
+                  <a href="/admin/pessoas" target="_blank" className="text-purple-600 underline">
+                    Cadastrar agora
+                  </a>
+                </li>
+              ) : (
+                pessoasSugeridas().map((p) => (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      onClick={() => applyPessoa(p)}
+                      className="w-full flex items-center gap-3 px-5 py-3 hover:bg-purple-50 transition-colors text-left"
+                    >
+                      {p.fotoUrl ? (
+                        <img
+                          src={p.fotoUrl}
+                          alt={p.nome}
+                          className="w-9 h-9 rounded-full object-cover border border-[#E5E7EB] flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-9 h-9 rounded-full bg-[#F0EDFB] flex items-center justify-center text-purple-600 text-sm font-semibold border border-[#E5E7EB] flex-shrink-0">
+                          {p.nome.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-[#111118] truncate">{p.nome}</p>
+                        {p.instagramUrl && (
+                          <p className="text-xs text-[#9CA3AF] truncate">{p.instagramUrl}</p>
+                        )}
+                      </div>
+                    </button>
+                  </li>
+                ))
+              )}
+            </ul>
+
+            {/* Footer */}
+            <div className="px-5 py-3 border-t border-[#E5E7EB] flex justify-between items-center">
+              <a
+                href="/admin/pessoas"
+                target="_blank"
+                className="text-xs text-purple-600 hover:text-purple-700 underline"
+              >
+                + Gerenciar Pessoas
+              </a>
+              <button
+                type="button"
+                onClick={() => setPessoaPickerTarget(null)}
+                className="text-xs text-[#6B7280] hover:text-[#374151] px-3 py-1.5 border border-[#E5E7EB] rounded-lg transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

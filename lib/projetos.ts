@@ -21,6 +21,8 @@ export interface MembroEquipe {
   funcaoId: string;
   fotoUrl?: string;
   instagramUrl?: string;
+  /** ID da Pessoa cadastrada vinculada a este membro (campos bloqueados para edição) */
+  pessoaId?: string;
 }
 
 export interface MembroElenco {
@@ -29,6 +31,8 @@ export interface MembroElenco {
   personagem: string;
   fotoUrl?: string;
   instagramUrl?: string;
+  /** ID da Pessoa cadastrada vinculada a este membro (campos bloqueados para edição) */
+  pessoaId?: string;
 }
 
 export interface Projeto {

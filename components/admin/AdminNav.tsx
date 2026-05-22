@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 const navLinks = [
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/projetos", label: "Projetos" },
+  { href: "/admin/pessoas", label: "Pessoas" },
   { href: "/admin/categorias", label: "Categorias" },
   { href: "/admin/funcoes", label: "Funções" },
   { href: "/admin/site", label: "Página Inicial" },

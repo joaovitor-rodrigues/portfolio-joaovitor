@@ -171,7 +171,7 @@ function DepartamentoHeader({
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold text-purple-800">{dep.nome}</span>
         <span className="text-xs text-purple-500 bg-purple-100 px-2 py-0.5 rounded-full">
-          {funcaoCount} função{funcaoCount !== 1 ? "ões" : ""}
+          {funcaoCount} {funcaoCount === 1 ? "função" : "funções"}
         </span>
       </div>
       <div className="flex items-center gap-2">

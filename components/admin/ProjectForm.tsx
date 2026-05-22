@@ -46,6 +46,8 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
     descricaoLonga: projeto?.descricaoLonga || "",
     thumb: projeto?.thumb || "",
     videoUrl: projeto?.videoUrl || "",
+    letterboxdUrl: projeto?.letterboxdUrl || "",
+    imdbUrl: projeto?.imdbUrl || "",
     destaque: projeto?.destaque || false,
     publicado: projeto?.publicado !== undefined ? projeto.publicado : true,
   });
@@ -741,6 +743,38 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
           className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
           placeholder="https://www.youtube.com/embed/..."
         />
+      </div>
+
+      {/* Links externos */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-[#374151] mb-1">
+            Letterboxd
+            <span className="ml-1 text-xs font-normal text-[#9CA3AF]">(opcional)</span>
+          </label>
+          <input
+            type="url"
+            name="letterboxdUrl"
+            value={form.letterboxdUrl}
+            onChange={handleChange}
+            className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+            placeholder="https://letterboxd.com/film/..."
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[#374151] mb-1">
+            IMDb
+            <span className="ml-1 text-xs font-normal text-[#9CA3AF]">(opcional)</span>
+          </label>
+          <input
+            type="url"
+            name="imdbUrl"
+            value={form.imdbUrl}
+            onChange={handleChange}
+            className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+            placeholder="https://www.imdb.com/title/..."
+          />
+        </div>
       </div>
 
       {/* Festivais */}

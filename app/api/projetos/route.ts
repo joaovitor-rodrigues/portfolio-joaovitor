@@ -80,6 +80,8 @@ export async function POST(request: NextRequest) {
     mostrarElenco: body.mostrarElenco !== false,
     equipe: Array.isArray(body.equipe) ? body.equipe : [],
     mostrarEquipe: body.mostrarEquipe !== false,
+    letterboxdUrl: body.letterboxdUrl || "",
+    imdbUrl: body.imdbUrl || "",
   });
 
   return NextResponse.json(novo, { status: 201 });

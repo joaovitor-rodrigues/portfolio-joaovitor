@@ -55,6 +55,8 @@ export interface Projeto {
   destaque: boolean;
   publicado: boolean;
   criadoEm: string;
+  letterboxdUrl?: string;
+  imdbUrl?: string;
   festivais: Festival[];
   premios: Premio[];
   mostrarFestivais: boolean;

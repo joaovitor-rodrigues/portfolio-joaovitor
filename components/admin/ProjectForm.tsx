@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Projeto, Festival, Premio, MembroEquipe } from "@/lib/projetos";
+import { Projeto, Festival, Premio } from "@/lib/projetos";
 import { resolveImageUrl } from "@/lib/gdrive";
 import { Categoria } from "@/lib/categorias";
 import { FuncaoEquipe } from "@/lib/funcoes";

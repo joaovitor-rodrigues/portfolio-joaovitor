@@ -1138,11 +1138,20 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
 
                     {/* Conteúdo */}
                     <div className="flex-1 grid gap-2">
-                      {/* Rótulo da função + vínculo */}
+                      {/* Rótulo da função + departamento + vínculo */}
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">
-                          {row.funcaoNome}
-                        </p>
+                        <div className="flex flex-col leading-tight">
+                          {(() => {
+                            const funcao = funcoes.find((f) => f.id === row.funcaoId);
+                            const dep = funcao ? departamentos.find((d) => d.id === funcao.departamentoId) : undefined;
+                            return dep ? (
+                              <span className="text-[10px] text-[#9CA3AF] uppercase tracking-wide font-medium">{dep.nome}</span>
+                            ) : null;
+                          })()}
+                          <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">
+                            {row.funcaoNome}
+                          </p>
+                        </div>
                         {row.pessoaId ? (
                           <>
                             <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Projeto } from "@/lib/projetos";
 import { Categoria } from "@/lib/categorias";
 import { FuncaoEquipe } from "@/lib/funcoes";
+import { DepartamentoEquipe } from "@/lib/departamentos";
 import { resolveImageUrl } from "@/lib/gdrive";
 import Lightbox from "@/components/Lightbox";
 
@@ -13,9 +14,10 @@ interface Props {
   categoria?: Categoria;  // mantido por compatibilidade
   categorias?: Categoria[];
   funcoes?: FuncaoEquipe[];
+  departamentos?: DepartamentoEquipe[];
 }
 
-export default function ProjetoClient({ projeto, categorias = [], funcoes = [] }: Props) {
+export default function ProjetoClient({ projeto, categorias = [], funcoes = [], departamentos = [] }: Props) {
   const projCats = (projeto.categorias ?? [])
     .map((id) => categorias.find((c) => c.id === id))
     .filter(Boolean) as Categoria[];
@@ -230,71 +232,129 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [] }
         </div>
       )}
 
-      {/* Equipe */}
-      {projeto.mostrarEquipe && projeto.equipe?.filter((m) => m.nome?.trim()).length > 0 && (
-        <div className="mt-12">
-          <h2 className="font-display text-2xl font-normal text-[#111118] mb-6 flex items-center gap-2">
-            <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-            </svg>
-            Equipe
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 w-full">
-            {projeto.equipe
-              .filter((m) => m.nome?.trim())
-              .map((m) => {
-                const funcao = funcoes.find((f) => f.id === m.funcaoId);
-                const igUsername = m.instagramUrl?.replace(/^@/, "") ?? null;
-                const igHandle = igUsername ? `@${igUsername}` : null;
-                const igHref = igUsername ? `https://instagram.com/${igUsername}` : null;
-                const avatarSrc = m.fotoUrl
-                  ? resolveImageUrl(m.fotoUrl)
-                  : null;
-                return (
-                  <div key={m.funcaoId} className="flex flex-col gap-2 p-4 rounded-xl border border-[#E5E7EB] bg-[#F8F8FA]">
-                    {/* Função */}
-                    <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider leading-none">
-                      {funcao?.nome ?? ""}
-                    </p>
-                    {/* Avatar + Nome */}
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      {avatarSrc ? (
-                        <img
-                          src={avatarSrc}
-                          alt={m.nome}
-                          className="w-9 h-9 rounded-full object-cover flex-shrink-0 border border-[#E5E7EB]"
-                        />
-                      ) : (
-                        <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                          <span className="text-purple-600 text-sm font-semibold">
-                            {m.nome.charAt(0).toUpperCase()}
-                          </span>
+      {/* Equipe — agrupada por departamento → função, respeitando a ordem do admin */}
+      {projeto.mostrarEquipe && (() => {
+        const membros = (projeto.equipe ?? []).filter((m) => m.nome?.trim());
+        if (membros.length === 0) return null;
+
+        // Agrupa preservando a ordem de primeira aparição de cada departamento e função
+        type FuncaoGroup = { funcaoId: string; funcaoNome: string; membros: typeof membros };
+        type DepGroup = { depId: string; depNome: string; funcoes: FuncaoGroup[] };
+
+        const depGroups: DepGroup[] = [];
+        const depIndex: Record<string, number> = {};
+        const funcIndex: Record<string, Record<string, number>> = {};
+
+        for (const m of membros) {
+          const funcao = funcoes.find((f) => f.id === m.funcaoId);
+          const dep = funcao ? departamentos.find((d) => d.id === funcao.departamentoId) : undefined;
+          const depId = dep?.id ?? "__sem_dep__";
+          const depNome = dep?.nome ?? "Equipe";
+
+          if (depIndex[depId] === undefined) {
+            depIndex[depId] = depGroups.length;
+            funcIndex[depId] = {};
+            depGroups.push({ depId, depNome, funcoes: [] });
+          }
+          const dg = depGroups[depIndex[depId]];
+
+          const funcaoId = m.funcaoId ?? "__sem_func__";
+          const funcaoNome = funcao?.nome ?? "";
+          if (funcIndex[depId][funcaoId] === undefined) {
+            funcIndex[depId][funcaoId] = dg.funcoes.length;
+            dg.funcoes.push({ funcaoId, funcaoNome, membros: [] });
+          }
+          dg.funcoes[funcIndex[depId][funcaoId]].membros.push(m);
+        }
+
+        const multiDep = depGroups.length > 1;
+
+        return (
+          <div className="mt-12">
+            <h2 className="font-display text-2xl font-normal text-[#111118] mb-6 flex items-center gap-2">
+              <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+              </svg>
+              Equipe
+            </h2>
+
+            <div className="space-y-8">
+              {depGroups.map((dg) => (
+                <div key={dg.depId}>
+                  {/* Cabeçalho do departamento — só exibe quando há mais de um */}
+                  {multiDep && (
+                    <h3 className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-widest mb-4 pb-2 border-b border-[#F3F4F6]">
+                      {dg.depNome}
+                    </h3>
+                  )}
+
+                  <div className="space-y-5">
+                    {dg.funcoes.map((fg) => (
+                      <div key={fg.funcaoId}>
+                        {/* Rótulo da função */}
+                        <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-2">
+                          {fg.funcaoNome}
+                        </p>
+
+                        {/* Membros da função */}
+                        <div className="flex flex-wrap gap-3">
+                          {fg.membros.map((m) => {
+                            const igUsername = m.instagramUrl?.replace(/^@/, "") ?? null;
+                            const igHandle = igUsername ? `@${igUsername}` : null;
+                            const igHref = igUsername ? `https://instagram.com/${igUsername}` : null;
+                            const avatarSrc = m.fotoUrl ? resolveImageUrl(m.fotoUrl) : null;
+
+                            return (
+                              <div
+                                key={m.id}
+                                className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#E5E7EB] bg-[#F8F8FA] min-w-[160px]"
+                              >
+                                {/* Avatar */}
+                                {avatarSrc ? (
+                                  <img
+                                    src={avatarSrc}
+                                    alt={m.nome}
+                                    className="w-9 h-9 rounded-full object-cover flex-shrink-0 border border-[#E5E7EB]"
+                                  />
+                                ) : (
+                                  <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                    <span className="text-purple-600 text-sm font-semibold">
+                                      {m.nome.charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                )}
+                                {/* Nome + Instagram */}
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium text-[#111118] leading-tight truncate">
+                                    {m.nome}
+                                  </p>
+                                  {igHref && igHandle && (
+                                    <a
+                                      href={igHref}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-1 text-xs text-[#9CA3AF] hover:text-purple-600 transition-colors mt-0.5 w-fit"
+                                    >
+                                      <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                                      </svg>
+                                      <span className="truncate">{igHandle}</span>
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      )}
-                      <span className="text-sm font-medium text-[#111118] leading-tight truncate">
-                        {m.nome}
-                      </span>
-                    </div>
-                    {/* Instagram */}
-                    {igHref && igHandle && (
-                      <a
-                        href={igHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 text-xs text-[#9CA3AF] hover:text-purple-600 transition-colors w-fit"
-                      >
-                        <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                        </svg>
-                        <span className="truncate">{igHandle}</span>
-                      </a>
-                    )}
+                      </div>
+                    ))}
                   </div>
-                );
-              })}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Festivais */}
       {projeto.mostrarFestivais && projeto.festivais?.length > 0 && (

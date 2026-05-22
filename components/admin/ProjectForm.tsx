@@ -117,7 +117,7 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
     });
   }
 
-  // Equipe — rows adicionados manualmente pelo usuário (duplicatas permitidas)
+  // Equipe — rows vinculados a Pessoas cadastradas
   type EquipeRow = {
     rowId: string;       // id único da linha (não confundir com funcaoId)
     funcaoId: string;
@@ -126,6 +126,12 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
     instagramUrl: string;
     fotoUrl: string;
     pessoaId?: string;
+  };
+
+  type DeptGroup = {
+    deptId: string;
+    deptNome: string;
+    rows: EquipeRow[];
   };
 
   function buildEquipeRows(): EquipeRow[] {
@@ -150,20 +156,41 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
 
   const [equipeRows, setEquipeRows] = useState<EquipeRow[]>(buildEquipeRows);
   const [selectedFuncaoId, setSelectedFuncaoId] = useState("");
+  const [pendingPickerRowId, setPendingPickerRowId] = useState<string | null>(null);
 
   function addEquipeRow() {
     if (!selectedFuncaoId) return;
     const funcao = funcoes.find((f) => f.id === selectedFuncaoId);
     if (!funcao) return;
-    setEquipeRows((prev) => [
-      ...prev,
-      { rowId: `row-${Date.now()}`, funcaoId: selectedFuncaoId, funcaoNome: funcao.nome, nome: "", instagramUrl: "", fotoUrl: "" },
-    ]);
+    const newRowId = `row-${Date.now()}`;
+    const newRow: EquipeRow = {
+      rowId: newRowId,
+      funcaoId: selectedFuncaoId,
+      funcaoNome: funcao.nome,
+      nome: "",
+      instagramUrl: "",
+      fotoUrl: "",
+    };
+    setEquipeRows((prev) => {
+      // Inserir após o último membro do mesmo departamento, mantendo blocos agrupados
+      const deptId = funcao.departamentoId;
+      let insertIdx = prev.length;
+      if (deptId) {
+        for (let i = prev.length - 1; i >= 0; i--) {
+          const f = funcoes.find((ff) => ff.id === prev[i].funcaoId);
+          if (f?.departamentoId === deptId) { insertIdx = i + 1; break; }
+        }
+      }
+      const next = [...prev];
+      next.splice(insertIdx, 0, newRow);
+      return next;
+    });
     setSelectedFuncaoId("");
+    setPendingPickerRowId(newRowId);
   }
 
-  function removeEquipeRow(idx: number) {
-    setEquipeRows((prev) => prev.filter((_, i) => i !== idx));
+  function removeEquipeRow(rowId: string) {
+    setEquipeRows((prev) => prev.filter((r) => r.rowId !== rowId));
   }
   const [mostrarEquipe, setMostrarEquipe] = useState(projeto?.mostrarEquipe ?? true);
 
@@ -238,32 +265,81 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
     }
   }
 
-  // Drag-to-reorder equipe
-  const dragEquipeIdx = useRef<number | null>(null);
-  const dragOverEquipeIdx = useRef<number | null>(null);
+  // ── Reordenação de equipe por bloco de departamento ──────────────────────
+  const dragDeptId = useRef<string | null>(null);
+  const dragOverDeptId = useRef<string | null>(null);
 
-  function onEquipeDragStart(index: number) { dragEquipeIdx.current = index; }
-  function onEquipeDragOver(e: React.DragEvent, index: number) { e.preventDefault(); dragOverEquipeIdx.current = index; }
-  function onEquipeDrop() {
-    const from = dragEquipeIdx.current;
-    const to = dragOverEquipeIdx.current;
-    if (from !== null && to !== null && from !== to) {
+  function computeGroupsFromRows(rows: EquipeRow[]): DeptGroup[] {
+    const groups: DeptGroup[] = [];
+    for (const row of rows) {
+      const funcao = funcoes.find((f) => f.id === row.funcaoId);
+      const dep = funcao ? departamentos.find((d) => d.id === funcao.departamentoId) : undefined;
+      const deptId = dep?.id ?? "__no_dept__";
+      const deptNome = dep?.nome ?? "Sem departamento";
+      let group = groups.find((g) => g.deptId === deptId);
+      if (!group) { group = { deptId, deptNome, rows: [] }; groups.push(group); }
+      group.rows.push(row);
+    }
+    return groups;
+  }
+
+  function onDeptDragStart(deptId: string) { dragDeptId.current = deptId; }
+  function onDeptDragOver(e: React.DragEvent, deptId: string) { e.preventDefault(); dragOverDeptId.current = deptId; }
+  function onDeptDrop() {
+    const from = dragDeptId.current;
+    const to = dragOverDeptId.current;
+    if (from && to && from !== to) {
       setEquipeRows((prev) => {
-        const next = [...prev];
-        const [item] = next.splice(from, 1);
-        next.splice(to, 0, item);
-        return next;
+        const groups = computeGroupsFromRows(prev);
+        const fromIdx = groups.findIndex((g) => g.deptId === from);
+        const toIdx = groups.findIndex((g) => g.deptId === to);
+        if (fromIdx === -1 || toIdx === -1) return prev;
+        const next = [...groups];
+        const [item] = next.splice(fromIdx, 1);
+        next.splice(toIdx, 0, item);
+        return next.flatMap((g) => g.rows);
       });
     }
-    dragEquipeIdx.current = null;
-    dragOverEquipeIdx.current = null;
+    dragDeptId.current = null;
+    dragOverDeptId.current = null;
   }
-  function moveEquipeRow(from: number, to: number) {
-    if (to < 0 || to >= equipeRows.length) return;
+
+  function moveDeptBlock(deptId: string, direction: -1 | 1) {
     setEquipeRows((prev) => {
-      const next = [...prev];
-      const [item] = next.splice(from, 1);
+      const groups = computeGroupsFromRows(prev);
+      const idx = groups.findIndex((g) => g.deptId === deptId);
+      const to = idx + direction;
+      if (idx === -1 || to < 0 || to >= groups.length) return prev;
+      const next = [...groups];
+      const [item] = next.splice(idx, 1);
       next.splice(to, 0, item);
+      return next.flatMap((g) => g.rows);
+    });
+  }
+
+  function moveRowInDept(rowId: string, direction: -1 | 1) {
+    setEquipeRows((prev) => {
+      const idx = prev.findIndex((r) => r.rowId === rowId);
+      if (idx === -1) return prev;
+      const row = prev[idx];
+      const funcao = funcoes.find((f) => f.id === row.funcaoId);
+      const deptId = funcao?.departamentoId ?? null;
+      let targetIdx = -1;
+      if (direction === -1) {
+        for (let i = idx - 1; i >= 0; i--) {
+          const f = funcoes.find((ff) => ff.id === prev[i].funcaoId);
+          if ((f?.departamentoId ?? null) === deptId) { targetIdx = i; break; }
+        }
+      } else {
+        for (let i = idx + 1; i < prev.length; i++) {
+          const f = funcoes.find((ff) => ff.id === prev[i].funcaoId);
+          if ((f?.departamentoId ?? null) === deptId) { targetIdx = i; break; }
+        }
+      }
+      if (targetIdx === -1) return prev;
+      const next = [...prev];
+      const [item] = next.splice(idx, 1);
+      next.splice(targetIdx, 0, item);
       return next;
     });
   }
@@ -275,6 +351,18 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
       setForm((prev) => ({ ...prev, slug: slugify(form.titulo) }));
     }
   }, [form.titulo, slugManual]);
+
+  // Abre o picker automaticamente quando uma nova função é adicionada
+  useEffect(() => {
+    if (!pendingPickerRowId) return;
+    const idx = equipeRows.findIndex((r) => r.rowId === pendingPickerRowId);
+    if (idx !== -1) {
+      const row = equipeRows[idx];
+      setPessoaPickerTarget({ section: "equipe", idx, funcaoId: row.funcaoId });
+      setPessoaBusca("");
+      setPendingPickerRowId(null);
+    }
+  }, [equipeRows, pendingPickerRowId]);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -1100,7 +1188,7 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
           <div>
             <h3 className="text-sm font-semibold text-[#374151]">Equipe</h3>
             <p className="text-xs text-[#9CA3AF] mt-0.5">
-              Preencha os profissionais de cada função. Arraste para reordenar.
+              Arraste os blocos de departamento para reordená-los. Use ↑↓ para ordenar pessoas dentro de cada departamento.
             </p>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
@@ -1121,139 +1209,154 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
           </p>
         ) : (
           <div className="space-y-3">
-            {/* Rows adicionados */}
-            {equipeRows.length > 0 && (
-              <div className="space-y-2">
-                {equipeRows.map((row, idx) => (
-                  <div
-                    key={row.rowId}
-                    draggable
-                    onDragStart={() => onEquipeDragStart(idx)}
-                    onDragOver={(e) => onEquipeDragOver(e, idx)}
-                    onDrop={onEquipeDrop}
-                    className="flex gap-2 items-start bg-[#F8F8FA] p-3 rounded-lg border border-[#E5E7EB] group"
-                  >
-                    {/* Drag handle + up/down */}
-                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0 pt-1">
-                      <div className="cursor-grab active:cursor-grabbing p-1 text-[#D1D5DB] hover:text-[#9CA3AF] transition-colors">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+
+            {/* Blocos agrupados por departamento */}
+            {equipeRows.length > 0 && (() => {
+              const groups = computeGroupsFromRows(equipeRows);
+              return (
+                <div className="space-y-2">
+                  {groups.map((group, groupIdx) => (
+                    <div
+                      key={group.deptId}
+                      onDragOver={(e) => onDeptDragOver(e, group.deptId)}
+                      onDrop={onDeptDrop}
+                      className="border border-[#E5E7EB] rounded-xl overflow-hidden"
+                    >
+                      {/* ── Cabeçalho do departamento (arrastável) ── */}
+                      <div
+                        draggable
+                        onDragStart={() => onDeptDragStart(group.deptId)}
+                        className="flex items-center gap-2 px-3 py-2 bg-[#F3F4F6] border-b border-[#E5E7EB] cursor-grab active:cursor-grabbing select-none"
+                      >
+                        {/* Drag handle */}
+                        <svg className="w-4 h-4 text-[#9CA3AF] flex-shrink-0" fill="currentColor" viewBox="0 0 16 16">
                           <circle cx="5" cy="4" r="1.2" /><circle cx="5" cy="8" r="1.2" /><circle cx="5" cy="12" r="1.2" />
                           <circle cx="11" cy="4" r="1.2" /><circle cx="11" cy="8" r="1.2" /><circle cx="11" cy="12" r="1.2" />
                         </svg>
+                        <span className="text-xs font-bold text-[#374151] uppercase tracking-wider flex-1">
+                          {group.deptNome}
+                          <span className="ml-1.5 font-normal text-[#9CA3AF] normal-case tracking-normal">
+                            ({group.rows.length} {group.rows.length === 1 ? "pessoa" : "pessoas"})
+                          </span>
+                        </span>
+                        {/* Setas de ordenação do bloco */}
+                        <div className="flex gap-0.5" onMouseDown={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); moveDeptBlock(group.deptId, -1); }}
+                            disabled={groupIdx === 0}
+                            className="p-1 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
+                            title="Mover departamento para cima"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); moveDeptBlock(group.deptId, 1); }}
+                            disabled={groupIdx === groups.length - 1}
+                            className="p-1 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
+                            title="Mover departamento para baixo"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
-                      <button type="button" onClick={() => moveEquipeRow(idx, idx - 1)} disabled={idx === 0}
-                        className="p-0.5 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
-                        </svg>
-                      </button>
-                      <button type="button" onClick={() => moveEquipeRow(idx, idx + 1)} disabled={idx === equipeRows.length - 1}
-                        className="p-0.5 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                    </div>
 
-                    {/* Conteúdo */}
-                    <div className="flex-1 grid gap-2">
-                      {/* Rótulo da função + departamento + vínculo */}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className="flex flex-col leading-tight">
-                          {(() => {
-                            const funcao = funcoes.find((f) => f.id === row.funcaoId);
-                            const dep = funcao ? departamentos.find((d) => d.id === funcao.departamentoId) : undefined;
-                            return dep ? (
-                              <span className="text-[10px] text-[#9CA3AF] uppercase tracking-wide font-medium">{dep.nome}</span>
-                            ) : null;
-                          })()}
-                          <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">
-                            {row.funcaoNome}
-                          </p>
-                        </div>
-                        {row.pessoaId ? (
-                          <>
-                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
-                              🔗 Vinculado a Pessoas
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => unlinkPessoa("equipe", idx)}
-                              className="text-xs text-[#9CA3AF] hover:text-red-500 transition-colors underline"
-                            >
-                              Desvincular
-                            </button>
-                            <a
-                              href="/admin/pessoas"
-                              target="_blank"
-                              className="text-xs text-purple-600 hover:text-purple-700 underline"
-                            >
-                              Editar dados
-                            </a>
-                          </>
-                        ) : (
-                          pessoas.filter((p) => p.tipo === "equipe" || p.tipo === "ambos").length > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => { setPessoaPickerTarget({ section: "equipe", idx, funcaoId: row.funcaoId }); setPessoaBusca(""); }}
-                              className="text-xs text-purple-600 hover:text-purple-700 border border-purple-200 hover:border-purple-400 bg-purple-50 hover:bg-purple-100 rounded-md px-2 py-0.5 transition-colors"
-                            >
-                              🔗 Vincular a Pessoas
-                            </button>
-                          )
-                        )}
+                      {/* ── Linhas de pessoas do departamento ── */}
+                      <div className="divide-y divide-[#F3F4F6]">
+                        {group.rows.map((row, rowInDeptIdx) => {
+                          const flatIdx = equipeRows.findIndex((r) => r.rowId === row.rowId);
+                          return (
+                            <div key={row.rowId} className="flex gap-2 items-center px-3 py-2.5 bg-white">
+
+                              {/* Setas dentro do departamento */}
+                              <div className="flex flex-col gap-0 flex-shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => moveRowInDept(row.rowId, -1)}
+                                  disabled={rowInDeptIdx === 0}
+                                  className="p-0.5 text-[#D1D5DB] hover:text-[#374151] disabled:opacity-0 disabled:cursor-not-allowed transition-colors"
+                                  title="Subir dentro do departamento"
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
+                                  </svg>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => moveRowInDept(row.rowId, 1)}
+                                  disabled={rowInDeptIdx === group.rows.length - 1}
+                                  className="p-0.5 text-[#D1D5DB] hover:text-[#374151] disabled:opacity-0 disabled:cursor-not-allowed transition-colors"
+                                  title="Descer dentro do departamento"
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </button>
+                              </div>
+
+                              {/* Função */}
+                              <span className="text-xs font-semibold text-purple-600 uppercase tracking-wide w-28 flex-shrink-0 truncate">
+                                {row.funcaoNome}
+                              </span>
+
+                              {/* Pessoa vinculada ou campo de busca */}
+                              <div className="flex-1 flex items-center gap-2 min-w-0">
+                                {row.pessoaId ? (
+                                  <>
+                                    {row.fotoUrl ? (
+                                      <img src={row.fotoUrl} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0 border border-[#E5E7EB]" />
+                                    ) : (
+                                      <div className="w-7 h-7 rounded-full bg-[#F0EDFB] flex items-center justify-center text-purple-600 text-xs font-semibold border border-[#E5E7EB] flex-shrink-0">
+                                        {row.nome.charAt(0).toUpperCase()}
+                                      </div>
+                                    )}
+                                    <span className="text-sm text-[#374151] truncate font-medium flex-1 min-w-0">{row.nome}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => unlinkPessoa("equipe", flatIdx)}
+                                      className="text-xs text-[#9CA3AF] hover:text-red-500 transition-colors flex-shrink-0"
+                                      title="Desvincular pessoa"
+                                    >
+                                      Desvincular
+                                    </button>
+                                  </>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => { setPessoaPickerTarget({ section: "equipe", idx: flatIdx, funcaoId: row.funcaoId }); setPessoaBusca(""); }}
+                                    className="flex items-center gap-2 text-sm text-[#9CA3AF] hover:text-purple-700 border border-dashed border-[#D1D5DB] hover:border-purple-400 hover:bg-purple-50 rounded-lg px-3 py-1.5 transition-colors w-full"
+                                  >
+                                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    Buscar pessoa cadastrada…
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Remover linha */}
+                              <button
+                                type="button"
+                                onClick={() => removeEquipeRow(row.rowId)}
+                                className="px-2 py-1.5 text-[#EF4444] hover:bg-red-50 rounded-lg text-xs transition-colors border border-[#E5E7EB] flex-shrink-0"
+                                title="Remover"
+                              >✕</button>
+                            </div>
+                          );
+                        })}
                       </div>
-                      {/* Nome do profissional: bloqueado se vinculado */}
-                      {row.pessoaId ? (
-                        <div className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm bg-[#F8F8FA] text-[#374151] flex items-center gap-2">
-                          {row.fotoUrl && (
-                            <img src={row.fotoUrl} alt="" className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
-                          )}
-                          <span className="truncate">{row.nome || <span className="text-[#9CA3AF]">—</span>}</span>
-                        </div>
-                      ) : (
-                        <input
-                          type="text"
-                          value={row.nome}
-                          onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, nome: e.target.value } : x))}
-                          placeholder="Nome do profissional"
-                          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-                        />
-                      )}
-                      {/* Instagram + Foto: bloqueados se vinculado */}
-                      {!row.pessoaId && (
-                        <div className="grid grid-cols-2 gap-2">
-                          <input
-                            type="text"
-                            value={row.instagramUrl}
-                            onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, instagramUrl: e.target.value } : x))}
-                            placeholder="@instagram (opcional)"
-                            className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-                          />
-                          <input
-                            type="url"
-                            value={row.fotoUrl}
-                            onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, fotoUrl: e.target.value } : x))}
-                            placeholder="URL da foto (opcional)"
-                            className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-                          />
-                        </div>
-                      )}
                     </div>
+                  ))}
+                </div>
+              );
+            })()}
 
-                    {/* Remover */}
-                    <button
-                      type="button"
-                      onClick={() => removeEquipeRow(idx)}
-                      className="px-2.5 py-2 text-[#EF4444] hover:bg-red-50 rounded-lg text-sm transition-colors border border-[#E5E7EB] bg-white flex-shrink-0 mt-0.5"
-                      title="Remover função"
-                    >✕</button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Seletor para adicionar função (duplicatas permitidas) */}
+            {/* Seletor para adicionar função */}
             <div className="flex gap-2">
               <select
                 value={selectedFuncaoId}

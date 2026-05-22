@@ -323,7 +323,7 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [], 
                     </h3>
                   )}
 
-                  <div className="space-y-5">
+                  <div className="flex flex-wrap gap-x-10 gap-y-5">
                     {dg.funcoes.map((fg) => (
                       <div key={fg.funcaoId}>
                         {/* Rótulo da função */}

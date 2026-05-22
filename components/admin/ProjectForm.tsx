@@ -111,8 +111,9 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
     });
   }
 
-  // Equipe — rows adicionados manualmente pelo usuário
+  // Equipe — rows adicionados manualmente pelo usuário (duplicatas permitidas)
   type EquipeRow = {
+    rowId: string;       // id único da linha (não confundir com funcaoId)
     funcaoId: string;
     funcaoNome: string;
     nome: string;
@@ -127,6 +128,7 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
       const funcao = funcoes.find((f) => f.id === m.funcaoId);
       if (funcao) {
         rows.push({
+          rowId: `row-${Date.now()}-${Math.random()}`,
           funcaoId: m.funcaoId,
           funcaoNome: funcao.nome,
           nome: m.nome,
@@ -147,7 +149,7 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
     if (!funcao) return;
     setEquipeRows((prev) => [
       ...prev,
-      { funcaoId: selectedFuncaoId, funcaoNome: funcao.nome, nome: "", instagramUrl: "", fotoUrl: "" },
+      { rowId: `row-${Date.now()}`, funcaoId: selectedFuncaoId, funcaoNome: funcao.nome, nome: "", instagramUrl: "", fotoUrl: "" },
     ]);
     setSelectedFuncaoId("");
   }
@@ -949,7 +951,7 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
               <div className="space-y-2">
                 {equipeRows.map((row, idx) => (
                   <div
-                    key={row.funcaoId}
+                    key={row.rowId}
                     draggable
                     onDragStart={() => onEquipeDragStart(idx)}
                     onDragOver={(e) => onEquipeDragOver(e, idx)}
@@ -1023,35 +1025,29 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
               </div>
             )}
 
-            {/* Seletor para adicionar nova função */}
-            {funcoes.filter((f) => !equipeRows.some((r) => r.funcaoId === f.id)).length > 0 ? (
-              <div className="flex gap-2">
-                <select
-                  value={selectedFuncaoId}
-                  onChange={(e) => setSelectedFuncaoId(e.target.value)}
-                  className="flex-1 border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-300 text-[#374151]"
-                >
-                  <option value="">Selecionar função para adicionar…</option>
-                  {funcoes
-                    .filter((f) => !equipeRows.some((r) => r.funcaoId === f.id))
-                    .map((f) => (
-                      <option key={f.id} value={f.id}>{f.nome}</option>
-                    ))}
-                </select>
-                <button
-                  type="button"
-                  onClick={addEquipeRow}
-                  disabled={!selectedFuncaoId}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
-                >
-                  + Adicionar
-                </button>
-              </div>
-            ) : equipeRows.length > 0 ? (
-              <p className="text-xs text-[#9CA3AF]">Todas as funções cadastradas já foram adicionadas.</p>
-            ) : null}
+            {/* Seletor para adicionar função (duplicatas permitidas) */}
+            <div className="flex gap-2">
+              <select
+                value={selectedFuncaoId}
+                onChange={(e) => setSelectedFuncaoId(e.target.value)}
+                className="flex-1 border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-300 text-[#374151]"
+              >
+                <option value="">Selecionar função para adicionar…</option>
+                {funcoes.map((f) => (
+                  <option key={f.id} value={f.id}>{f.nome}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={addEquipeRow}
+                disabled={!selectedFuncaoId}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+              >
+                + Adicionar
+              </button>
+            </div>
 
-            {equipeRows.length === 0 && funcoes.length > 0 && !selectedFuncaoId && (
+            {equipeRows.length === 0 && (
               <p className="text-xs text-[#9CA3AF]">Nenhuma função adicionada. Selecione acima para incluir membros da equipe.</p>
             )}
           </div>

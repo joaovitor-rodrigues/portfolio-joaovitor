@@ -97,6 +97,41 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [], 
             </dd>
           </div>
         )}
+
+        {/* Ícones Letterboxd / IMDb — opcionais */}
+        {(projeto.letterboxdUrl || projeto.imdbUrl) && (
+          <div className="flex items-center gap-2 self-end pb-0.5">
+            {projeto.letterboxdUrl && (
+              <a
+                href={projeto.letterboxdUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Ver no Letterboxd"
+                className="opacity-80 hover:opacity-100 transition-opacity"
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="7.5" cy="12" r="5.5" fill="#00C030" />
+                  <circle cx="12" cy="12" r="5.5" fill="#FF8000" fillOpacity="0.85" />
+                  <circle cx="16.5" cy="12" r="5.5" fill="#40BCF4" fillOpacity="0.85" />
+                </svg>
+              </a>
+            )}
+            {projeto.imdbUrl && (
+              <a
+                href={projeto.imdbUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Ver no IMDb"
+                className="opacity-80 hover:opacity-100 transition-opacity"
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="24" height="24" rx="3" fill="#F5C518" />
+                  <path d="M4 7h2v10H4V7zm3.5 0h2.3l1.2 4.2L12.2 7h2.3v10h-1.8v-6.5L11.3 17H10l-1.4-6.5V17H7V7h.5zm7.5 0h3c1.7 0 2.5.9 2.5 2.7v4.6c0 1.8-.8 2.7-2.5 2.7H15V7zm1.8 1.6v6.8h1c.5 0 .7-.3.7-.8V9.4c0-.5-.2-.8-.7-.8h-1z" fill="#000" />
+                </svg>
+              </a>
+            )}
+          </div>
+        )}
       </dl>
 
       {/* Sinopse */}
@@ -423,43 +458,6 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [], 
               );
             })}
           </div>
-        </div>
-      )}
-
-      {/* Links externos: Letterboxd / IMDb */}
-      {(projeto.letterboxdUrl || projeto.imdbUrl) && (
-        <div className="mt-12 flex flex-wrap gap-3">
-          {projeto.letterboxdUrl && (
-            <a
-              href={projeto.letterboxdUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E5E7EB] bg-[#F8F8FA] text-sm text-[#374151] hover:bg-white hover:border-[#D1D5DB] transition-colors"
-            >
-              {/* Letterboxd icon */}
-              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="7.5" cy="12" r="5.5" fill="#00C030" />
-                <circle cx="12" cy="12" r="5.5" fill="#FF8000" fillOpacity="0.85" />
-                <circle cx="16.5" cy="12" r="5.5" fill="#40BCF4" fillOpacity="0.85" />
-              </svg>
-              Ver no Letterboxd
-            </a>
-          )}
-          {projeto.imdbUrl && (
-            <a
-              href={projeto.imdbUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E5E7EB] bg-[#F8F8FA] text-sm text-[#374151] hover:bg-white hover:border-[#D1D5DB] transition-colors"
-            >
-              {/* IMDb icon */}
-              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="#F5C518" xmlns="http://www.w3.org/2000/svg">
-                <rect width="24" height="24" rx="3" fill="#F5C518" />
-                <path d="M4 7h2v10H4V7zm3.5 0h2.3l1.2 4.2L12.2 7h2.3v10h-1.8v-6.5L11.3 17H10l-1.4-6.5V17H7V7h.5zm7.5 0h3c1.7 0 2.5.9 2.5 2.7v4.6c0 1.8-.8 2.7-2.5 2.7H15V7zm1.8 1.6v6.8h1c.5 0 .7-.3.7-.8V9.4c0-.5-.2-.8-.7-.8h-1z" fill="#000" />
-              </svg>
-              Ver no IMDb
-            </a>
-          )}
         </div>
       )}
 

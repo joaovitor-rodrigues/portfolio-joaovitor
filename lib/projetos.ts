@@ -99,10 +99,11 @@ export async function getAll(filters?: {
     projetos = projetos.filter((p) => p.destaque === filters.destaque);
   }
 
-  // Ordena por criadoEm decrescente
-  projetos.sort(
-    (a, b) => new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime()
-  );
+  // Ordena por ano decrescente; em caso de empate, ordem alfabética pelo título
+  projetos.sort((a, b) => {
+    if (b.ano !== a.ano) return b.ano - a.ano;
+    return a.titulo.localeCompare(b.titulo, "pt-BR", { sensitivity: "base" });
+  });
 
   return projetos;
 }

@@ -183,8 +183,6 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [] }
                 // Foto manual tem prioridade; caso contrário, tenta avatar do Instagram
                 const avatarSrc = m.fotoUrl
                   ? resolveImageUrl(m.fotoUrl)
-                  : igUsername
-                  ? `/api/instagram-avatar?username=${igUsername}`
                   : null;
                 return (
                   <div key={m.id} className="flex flex-col gap-2 p-4 rounded-xl border border-[#E5E7EB] bg-[#F8F8FA]">
@@ -251,8 +249,6 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [] }
                 const igHref = igUsername ? `https://instagram.com/${igUsername}` : null;
                 const avatarSrc = m.fotoUrl
                   ? resolveImageUrl(m.fotoUrl)
-                  : igUsername
-                  ? `/api/instagram-avatar?username=${igUsername}`
                   : null;
                 return (
                   <div key={m.funcaoId} className="flex flex-col gap-2 p-4 rounded-xl border border-[#E5E7EB] bg-[#F8F8FA]">

@@ -882,7 +882,7 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
                     type="url"
                     value={m.fotoUrl ?? ""}
                     onChange={(e) => setElenco((prev) => prev.map((x, i) => i === idx ? { ...x, fotoUrl: e.target.value || undefined } : x))}
-                    placeholder="URL da foto (auto via Instagram)"
+                    placeholder="URL da foto (opcional)"
                     className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
                   />
                 </div>
@@ -992,7 +992,7 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
                       type="url"
                       value={row.fotoUrl}
                       onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, fotoUrl: e.target.value } : x))}
-                      placeholder="URL da foto (auto via Instagram)"
+                      placeholder="URL da foto (opcional)"
                       className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
                     />
                   </div>

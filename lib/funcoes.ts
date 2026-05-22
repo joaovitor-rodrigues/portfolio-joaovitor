@@ -3,6 +3,7 @@ import { getSupabase } from "./supabase";
 export interface FuncaoEquipe {
   id: string;
   nome: string;
+  departamentoId: string;
 }
 
 export async function getAll(): Promise<FuncaoEquipe[]> {

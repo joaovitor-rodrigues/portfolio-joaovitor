@@ -6,12 +6,14 @@ import { Projeto, Festival, Premio, MembroElenco } from "@/lib/projetos";
 import { resolveImageUrl } from "@/lib/gdrive";
 import { Categoria } from "@/lib/categorias";
 import { FuncaoEquipe } from "@/lib/funcoes";
+import { DepartamentoEquipe } from "@/lib/departamentos";
 import { Pessoa } from "@/lib/pessoas";
 
 interface Props {
   projeto?: Projeto;
   categorias: Categoria[];
   funcoes: FuncaoEquipe[];
+  departamentos?: DepartamentoEquipe[];
   pessoas?: Pessoa[];
   mode: "new" | "edit";
 }
@@ -27,7 +29,7 @@ function slugify(text: string): string {
     .replace(/-+/g, "-");
 }
 
-export default function ProjectForm({ projeto, categorias, funcoes, pessoas = [], mode }: Props) {
+export default function ProjectForm({ projeto, categorias, funcoes, departamentos = [], pessoas = [], mode }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -1197,9 +1199,26 @@ export default function ProjectForm({ projeto, categorias, funcoes, pessoas = []
                 className="flex-1 border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-300 text-[#374151]"
               >
                 <option value="">Selecionar função para adicionar…</option>
-                {funcoes.map((f) => (
-                  <option key={f.id} value={f.id}>{f.nome}</option>
-                ))}
+                {departamentos.length > 0
+                  ? departamentos
+                      .slice()
+                      .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))
+                      .map((dep) => {
+                        const depFuncoes = funcoes
+                          .filter((f) => f.departamentoId === dep.id)
+                          .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+                        if (depFuncoes.length === 0) return null;
+                        return (
+                          <optgroup key={dep.id} label={dep.nome}>
+                            {depFuncoes.map((f) => (
+                              <option key={f.id} value={f.id}>{f.nome}</option>
+                            ))}
+                          </optgroup>
+                        );
+                      })
+                  : funcoes.map((f) => (
+                      <option key={f.id} value={f.id}>{f.nome}</option>
+                    ))}
               </select>
               <button
                 type="button"

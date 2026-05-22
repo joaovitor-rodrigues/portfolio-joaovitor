@@ -2,10 +2,12 @@ export const dynamic = "force-dynamic";
 
 import { getAll as getFuncoes } from "@/lib/funcoes";
 import { getAll as getProjetos } from "@/lib/projetos";
+import { getAll as getDepartamentos } from "@/lib/departamentos";
 import AdminFuncoesClient from "./AdminFuncoesClient";
 
 export default async function AdminFuncoesPage() {
-  const [funcoes, projetos] = await Promise.all([
+  const [departamentos, funcoes, projetos] = await Promise.all([
+    getDepartamentos(),
     getFuncoes(),
     getProjetos(),
   ]);
@@ -23,10 +25,10 @@ export default async function AdminFuncoesPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-[#111118]">Funções da Equipe</h1>
         <p className="mt-1 text-sm text-[#6B7280]">
-          Gerencie as funções disponíveis para os membros de equipe nos projetos
+          Organize as funções em departamentos. Cada função deve pertencer a um departamento.
         </p>
       </div>
-      <AdminFuncoesClient funcoes={funcoesComContagem} />
+      <AdminFuncoesClient departamentos={departamentos} funcoes={funcoesComContagem} />
     </div>
   );
 }

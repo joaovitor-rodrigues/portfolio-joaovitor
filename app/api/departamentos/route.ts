@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import * as funcoes from "@/lib/funcoes";
+import * as departamentos from "@/lib/departamentos";
 
 export async function GET() {
-  const all = await funcoes.getAll();
+  const all = await departamentos.getAll();
   return NextResponse.json(all);
 }
 
@@ -20,13 +20,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Nome é obrigatório" }, { status: 400 });
   }
 
-  if (!body.departamentoId?.trim()) {
-    return NextResponse.json({ error: "Departamento é obrigatório" }, { status: 400 });
-  }
-
-  const nova = await funcoes.create({
-    nome: body.nome.trim(),
-    departamentoId: body.departamentoId.trim(),
-  });
-  return NextResponse.json(nova, { status: 201 });
+  const novo = await departamentos.create({ nome: body.nome.trim() });
+  return NextResponse.json(novo, { status: 201 });
 }

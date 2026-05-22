@@ -177,19 +177,22 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [] }
             {projeto.elenco
               .filter((m) => m.ator?.trim())
               .map((m) => {
-                const igHandle = m.instagramUrl
-                  ? m.instagramUrl.startsWith("@") ? m.instagramUrl : `@${m.instagramUrl}`
-                  : null;
-                const igHref = m.instagramUrl
-                  ? `https://instagram.com/${m.instagramUrl.replace(/^@/, "")}`
+                const igUsername = m.instagramUrl?.replace(/^@/, "") ?? null;
+                const igHandle = igUsername ? `@${igUsername}` : null;
+                const igHref = igUsername ? `https://instagram.com/${igUsername}` : null;
+                // Foto manual tem prioridade; caso contrário, tenta avatar do Instagram
+                const avatarSrc = m.fotoUrl
+                  ? resolveImageUrl(m.fotoUrl)
+                  : igUsername
+                  ? `https://unavatar.io/instagram/${igUsername}`
                   : null;
                 return (
                   <div key={m.id} className="flex flex-col gap-2 p-4 rounded-xl border border-[#E5E7EB] bg-[#F8F8FA]">
-                    {/* Avatar + Nome */}
+                    {/* Avatar + Nome do ator */}
                     <div className="flex items-center gap-2.5 min-w-0">
-                      {m.fotoUrl ? (
+                      {avatarSrc ? (
                         <img
-                          src={resolveImageUrl(m.fotoUrl)}
+                          src={avatarSrc}
                           alt={m.ator}
                           className="w-9 h-9 rounded-full object-cover flex-shrink-0 border border-[#E5E7EB]"
                         />
@@ -200,13 +203,13 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [] }
                           </span>
                         </div>
                       )}
-                      <span className="text-sm font-medium text-[#111118] leading-tight truncate">
-                        {m.ator}
-                      </span>
+                      <span className="text-sm text-[#6B7280] leading-tight truncate">{m.ator}</span>
                     </div>
-                    {/* Personagem */}
+                    {/* Personagem — destaque principal */}
                     {m.personagem && (
-                      <p className="text-xs text-[#6B7280] truncate">{m.personagem}</p>
+                      <p className="text-base font-semibold text-[#111118] leading-tight truncate">
+                        {m.personagem}
+                      </p>
                     )}
                     {/* Instagram */}
                     {igHref && igHandle && (
@@ -243,11 +246,13 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [] }
               .filter((m) => m.nome?.trim())
               .map((m) => {
                 const funcao = funcoes.find((f) => f.id === m.funcaoId);
-                const igHandle = m.instagramUrl
-                  ? m.instagramUrl.startsWith("@") ? m.instagramUrl : `@${m.instagramUrl}`
-                  : null;
-                const igHref = m.instagramUrl
-                  ? `https://instagram.com/${m.instagramUrl.replace(/^@/, "")}`
+                const igUsername = m.instagramUrl?.replace(/^@/, "") ?? null;
+                const igHandle = igUsername ? `@${igUsername}` : null;
+                const igHref = igUsername ? `https://instagram.com/${igUsername}` : null;
+                const avatarSrc = m.fotoUrl
+                  ? resolveImageUrl(m.fotoUrl)
+                  : igUsername
+                  ? `https://unavatar.io/instagram/${igUsername}`
                   : null;
                 return (
                   <div key={m.funcaoId} className="flex flex-col gap-2 p-4 rounded-xl border border-[#E5E7EB] bg-[#F8F8FA]">
@@ -257,9 +262,9 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [] }
                     </p>
                     {/* Avatar + Nome */}
                     <div className="flex items-center gap-2.5 min-w-0">
-                      {m.fotoUrl ? (
+                      {avatarSrc ? (
                         <img
-                          src={resolveImageUrl(m.fotoUrl)}
+                          src={avatarSrc}
                           alt={m.nome}
                           className="w-9 h-9 rounded-full object-cover flex-shrink-0 border border-[#E5E7EB]"
                         />

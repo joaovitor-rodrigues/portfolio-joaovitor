@@ -184,7 +184,7 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [] }
                 const avatarSrc = m.fotoUrl
                   ? resolveImageUrl(m.fotoUrl)
                   : igUsername
-                  ? `https://unavatar.io/instagram/${igUsername}`
+                  ? `/api/instagram-avatar?username=${igUsername}`
                   : null;
                 return (
                   <div key={m.id} className="flex flex-col gap-2 p-4 rounded-xl border border-[#E5E7EB] bg-[#F8F8FA]">
@@ -252,7 +252,7 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [] }
                 const avatarSrc = m.fotoUrl
                   ? resolveImageUrl(m.fotoUrl)
                   : igUsername
-                  ? `https://unavatar.io/instagram/${igUsername}`
+                  ? `/api/instagram-avatar?username=${igUsername}`
                   : null;
                 return (
                   <div key={m.funcaoId} className="flex flex-col gap-2 p-4 rounded-xl border border-[#E5E7EB] bg-[#F8F8FA]">

@@ -413,227 +413,244 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
           {error}
         </div>
       )}
 
-      {/* Título */}
-      <div>
-        <label className="block text-sm font-medium text-[#374151] mb-1">
-          Título <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="titulo"
-          value={form.titulo}
-          onChange={handleChange}
-          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
-          placeholder="Nome do projeto"
-        />
-      </div>
+      {/* ── Grid 2 colunas: Metadados | Mídia ──────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6 items-start">
 
-      {/* Função realizada */}
-      <div>
-        <label className="block text-sm font-medium text-[#374151] mb-1">
-          Função realizada <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="funcaoRealizada"
-          value={form.funcaoRealizada}
-          onChange={handleChange}
-          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
-          placeholder="Ex: Direção de Fotografia"
-        />
-      </div>
+        {/* ── Coluna esquerda: texto / metadados ── */}
+        <div className="space-y-5">
 
-      {/* Slug */}
-      <div>
-        <label className="block text-sm font-medium text-[#374151] mb-1">
-          Slug <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="slug"
-          value={form.slug}
-          onChange={handleChange}
-          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 font-mono"
-          placeholder="url-do-projeto"
-        />
-        <p className="mt-1 text-xs text-[#9CA3AF]">Gerado automaticamente do título. Edite se necessário.</p>
-      </div>
+          {/* Título */}
+          <div>
+            <label className="block text-sm font-medium text-[#374151] mb-1">
+              Título <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="titulo"
+              value={form.titulo}
+              onChange={handleChange}
+              className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+              placeholder="Nome do projeto"
+            />
+          </div>
 
-      {/* Formatos — lista dinâmica */}
-      <div>
-        <label className="block text-sm font-medium text-[#374151] mb-2">
-          Formato
-          <span className="ml-1 text-xs font-normal text-[#9CA3AF]">(curta, longa, série, videoclipe…)</span>
-        </label>
-        <div className="space-y-2">
-          {formatos.map((f, index) => (
-            <div key={index} className="flex gap-2">
+          {/* Função realizada */}
+          <div>
+            <label className="block text-sm font-medium text-[#374151] mb-1">
+              Função realizada <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="funcaoRealizada"
+              value={form.funcaoRealizada}
+              onChange={handleChange}
+              className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+              placeholder="Ex: Direção de Fotografia"
+            />
+          </div>
+
+          {/* Slug */}
+          <div>
+            <label className="block text-sm font-medium text-[#374151] mb-1">
+              Slug <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="slug"
+              value={form.slug}
+              onChange={handleChange}
+              className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 font-mono"
+              placeholder="url-do-projeto"
+            />
+            <p className="mt-1 text-xs text-[#9CA3AF]">Gerado automaticamente do título. Edite se necessário.</p>
+          </div>
+
+          {/* Ano e Duração */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Ano</label>
+              <input
+                type="number"
+                name="ano"
+                value={form.ano}
+                onChange={handleChange}
+                min="1900"
+                max="2099"
+                className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Duração</label>
               <input
                 type="text"
-                value={f}
-                onChange={(e) => handleFormatoChange(index, e.target.value)}
-                className="flex-1 border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
-                placeholder="Ex: Curta-metragem"
+                name="duracao"
+                value={form.duracao}
+                onChange={handleChange}
+                className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+                placeholder="Ex: 18 min"
               />
-              {formatos.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeFormato(index)}
-                  className="px-3 py-2 text-[#EF4444] hover:bg-red-50 rounded-lg text-sm transition-colors border border-[#E5E7EB]"
-                >
-                  ✕
-                </button>
+            </div>
+          </div>
+
+          {/* Gênero */}
+          <div>
+            <label className="block text-sm font-medium text-[#374151] mb-1">Gênero</label>
+            <input
+              type="text"
+              name="genero"
+              value={form.genero}
+              onChange={handleChange}
+              className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+              placeholder="Ex: Drama, Documentário"
+            />
+          </div>
+
+          {/* Formatos — lista dinâmica */}
+          <div>
+            <label className="block text-sm font-medium text-[#374151] mb-2">
+              Formato
+              <span className="ml-1 text-xs font-normal text-[#9CA3AF]">(curta, longa, série, videoclipe…)</span>
+            </label>
+            <div className="space-y-2">
+              {formatos.map((f, index) => (
+                <div key={index} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={f}
+                    onChange={(e) => handleFormatoChange(index, e.target.value)}
+                    className="flex-1 border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+                    placeholder="Ex: Curta-metragem"
+                  />
+                  {formatos.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeFormato(index)}
+                      className="px-3 py-2 text-[#EF4444] hover:bg-red-50 rounded-lg text-sm transition-colors border border-[#E5E7EB]"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={addFormato}
+              className="mt-2 text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
+            >
+              <span className="text-lg leading-none">+</span> Adicionar formato
+            </button>
+          </div>
+
+          {/* Categorias */}
+          {categorias.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-2">Categorias</label>
+              <div className="flex flex-wrap gap-2">
+                {categorias.map((cat) => {
+                  const selected = categoriasSelected.includes(cat.id);
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => toggleCategoria(cat.id)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all ${
+                        selected
+                          ? "text-white border-transparent"
+                          : "bg-white text-[#374151] border-[#E5E7EB] hover:border-[#D1D5DB]"
+                      }`}
+                      style={selected ? { backgroundColor: cat.cor, borderColor: cat.cor } : {}}
+                    >
+                      {cat.nome}
+                    </button>
+                  );
+                })}
+              </div>
+              {categoriasSelected.length === 0 && (
+                <p className="mt-1 text-xs text-[#9CA3AF]">Nenhuma categoria selecionada</p>
               )}
             </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={addFormato}
-          className="mt-2 text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
-        >
-          <span className="text-lg leading-none">+</span> Adicionar formato
-        </button>
-      </div>
-
-      {/* Ano e Duração */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-[#374151] mb-1">Ano</label>
-          <input
-            type="number"
-            name="ano"
-            value={form.ano}
-            onChange={handleChange}
-            min="1900"
-            max="2099"
-            className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#374151] mb-1">Duração</label>
-          <input
-            type="text"
-            name="duracao"
-            value={form.duracao}
-            onChange={handleChange}
-            className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
-            placeholder="Ex: 18 min"
-          />
-        </div>
-      </div>
-
-      {/* Gênero */}
-      <div>
-        <label className="block text-sm font-medium text-[#374151] mb-1">Gênero</label>
-        <input
-          type="text"
-          name="genero"
-          value={form.genero}
-          onChange={handleChange}
-          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
-          placeholder="Ex: Drama, Documentário"
-        />
-      </div>
-
-      {/* Sinopse */}
-      <div>
-        <label className="block text-sm font-medium text-[#374151] mb-1">
-          Sinopse
-          <span className="ml-1 text-xs font-normal text-[#9CA3AF]">(resumo narrativo do projeto)</span>
-        </label>
-        <textarea
-          name="sinopse"
-          value={form.sinopse}
-          onChange={handleChange}
-          rows={4}
-          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 resize-y"
-          placeholder="Uma breve sinopse do projeto…"
-        />
-      </div>
-
-      {/* Categorias — multi-select com checkboxes */}
-      {categorias.length > 0 && (
-        <div>
-          <label className="block text-sm font-medium text-[#374151] mb-2">Categorias</label>
-          <div className="flex flex-wrap gap-2">
-            {categorias.map((cat) => {
-              const selected = categoriasSelected.includes(cat.id);
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => toggleCategoria(cat.id)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all ${
-                    selected
-                      ? "text-white border-transparent"
-                      : "bg-white text-[#374151] border-[#E5E7EB] hover:border-[#D1D5DB]"
-                  }`}
-                  style={selected ? { backgroundColor: cat.cor, borderColor: cat.cor } : {}}
-                >
-                  {cat.nome}
-                </button>
-              );
-            })}
-          </div>
-          {categoriasSelected.length === 0 && (
-            <p className="mt-1 text-xs text-[#9CA3AF]">Nenhuma categoria selecionada</p>
           )}
-        </div>
-      )}
 
-      {/* Descrição curta */}
-      <div>
-        <label className="block text-sm font-medium text-[#374151] mb-1">Descrição curta</label>
-        <textarea
-          name="descricaoCurta"
-          value={form.descricaoCurta}
-          onChange={handleChange}
-          rows={2}
-          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 resize-none"
-          placeholder="Uma linha para o card"
-        />
-      </div>
+        </div>{/* /coluna esquerda */}
 
-      {/* Descrição longa */}
-      <div>
-        <label className="block text-sm font-medium text-[#374151] mb-1">Descrição longa</label>
-        <textarea
-          name="descricaoLonga"
-          value={form.descricaoLonga}
-          onChange={handleChange}
-          rows={6}
-          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 resize-y"
-          placeholder="Texto completo da página do projeto"
-        />
-      </div>
+        {/* ── Coluna direita: mídia ── */}
+        <div className="space-y-5">
 
-      {/* Thumbnail */}
-      <div>
-        <label className="block text-sm font-medium text-[#374151] mb-1">URL da Thumbnail</label>
-        <input
-          type="url"
-          name="thumb"
-          value={form.thumb}
-          onChange={handleChange}
-          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
-          placeholder="https://..."
-        />
-        {form.thumb && (
-          <img
-            src={resolveImageUrl(form.thumb)}
-            alt="Preview"
-            className="mt-2 h-24 rounded-lg object-cover border border-[#E5E7EB]"
-          />
-        )}
-      </div>
+          {/* Thumbnail */}
+          <div>
+            <label className="block text-sm font-medium text-[#374151] mb-1">URL da Thumbnail</label>
+            <input
+              type="url"
+              name="thumb"
+              value={form.thumb}
+              onChange={handleChange}
+              className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+              placeholder="https://..."
+            />
+            {form.thumb && (
+              <img
+                src={resolveImageUrl(form.thumb)}
+                alt="Preview"
+                className="mt-2 w-full aspect-video rounded-lg object-cover border border-[#E5E7EB]"
+              />
+            )}
+          </div>
+
+          {/* Vídeo URL */}
+          <div>
+            <label className="block text-sm font-medium text-[#374151] mb-1">URL do Vídeo (embed)</label>
+            <input
+              type="url"
+              name="videoUrl"
+              value={form.videoUrl}
+              onChange={handleChange}
+              className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+              placeholder="https://www.youtube.com/embed/..."
+            />
+          </div>
+
+          {/* Links externos */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">
+                Letterboxd
+                <span className="ml-1 text-xs font-normal text-[#9CA3AF]">(opcional)</span>
+              </label>
+              <input
+                type="url"
+                name="letterboxdUrl"
+                value={form.letterboxdUrl}
+                onChange={handleChange}
+                className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+                placeholder="https://letterboxd.com/film/..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">
+                IMDb
+                <span className="ml-1 text-xs font-normal text-[#9CA3AF]">(opcional)</span>
+              </label>
+              <input
+                type="url"
+                name="imdbUrl"
+                value={form.imdbUrl}
+                onChange={handleChange}
+                className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+                placeholder="https://www.imdb.com/title/..."
+              />
+            </div>
+          </div>
+
+        </div>{/* /coluna direita */}
+      </div>{/* /grid 2 colunas */}
 
       {/* Galeria */}
       <div>
@@ -732,50 +749,50 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
         </button>
       </div>
 
-      {/* Vídeo URL */}
+      {/* Sinopse */}
       <div>
-        <label className="block text-sm font-medium text-[#374151] mb-1">URL do Vídeo (embed)</label>
-        <input
-          type="url"
-          name="videoUrl"
-          value={form.videoUrl}
+        <label className="block text-sm font-medium text-[#374151] mb-1">
+          Sinopse
+          <span className="ml-1 text-xs font-normal text-[#9CA3AF]">(resumo narrativo do projeto)</span>
+        </label>
+        <textarea
+          name="sinopse"
+          value={form.sinopse}
           onChange={handleChange}
-          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
-          placeholder="https://www.youtube.com/embed/..."
+          rows={3}
+          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 resize-y"
+          placeholder="Uma breve sinopse do projeto…"
         />
       </div>
 
-      {/* Links externos */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Descrições */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-[#374151] mb-1">
-            Letterboxd
-            <span className="ml-1 text-xs font-normal text-[#9CA3AF]">(opcional)</span>
-          </label>
-          <input
-            type="url"
-            name="letterboxdUrl"
-            value={form.letterboxdUrl}
+          <label className="block text-sm font-medium text-[#374151] mb-1">Descrição curta</label>
+          <textarea
+            name="descricaoCurta"
+            value={form.descricaoCurta}
             onChange={handleChange}
-            className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
-            placeholder="https://letterboxd.com/film/..."
+            rows={3}
+            className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 resize-none"
+            placeholder="Uma linha para o card"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#374151] mb-1">
-            IMDb
-            <span className="ml-1 text-xs font-normal text-[#9CA3AF]">(opcional)</span>
-          </label>
-          <input
-            type="url"
-            name="imdbUrl"
-            value={form.imdbUrl}
+          <label className="block text-sm font-medium text-[#374151] mb-1">Descrição longa</label>
+          <textarea
+            name="descricaoLonga"
+            value={form.descricaoLonga}
             onChange={handleChange}
-            className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
-            placeholder="https://www.imdb.com/title/..."
+            rows={3}
+            className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 resize-y"
+            placeholder="Texto completo da página do projeto"
           />
         </div>
       </div>
+
+      {/* ── Festivais + Prêmios lado a lado ─────────────────────────────────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
 
       {/* Festivais */}
       <div className="border border-[#E5E7EB] rounded-xl p-5 space-y-4">
@@ -923,6 +940,8 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
           <span className="text-lg leading-none">+</span> Adicionar prêmio
         </button>
       </div>
+
+      </div>{/* /grid festivais+prêmios */}
 
       {/* Elenco */}
       <div className="border border-[#E5E7EB] rounded-xl p-5 space-y-4">

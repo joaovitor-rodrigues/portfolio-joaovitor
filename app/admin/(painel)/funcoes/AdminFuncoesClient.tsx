@@ -581,7 +581,7 @@ export default function AdminFuncoesClient({
       {/* Botão global de nova função (quando há departamentos mas nenhuma função ainda) */}
       {departamentos.length > 0 && funcoes.length === 0 && (
         <div className="text-center text-xs text-[#9CA3AF] pt-2">
-          Clique em "+ Nova função" dentro de um departamento para começar.
+          Clique em &quot;+ Nova função&quot; dentro de um departamento para começar.
         </div>
       )}
     </div>

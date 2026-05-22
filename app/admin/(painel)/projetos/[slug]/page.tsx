@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import { getBySlug } from "@/lib/projetos";
 import { getAll as getCategorias } from "@/lib/categorias";

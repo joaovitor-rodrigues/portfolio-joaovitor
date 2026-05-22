@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getAll as getCategorias } from "@/lib/categorias";
 import ProjectForm from "@/components/admin/ProjectForm";
 

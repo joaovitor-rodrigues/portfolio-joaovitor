@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { get } from "@/lib/sobre";
 import AdminSobreClient from "./AdminSobreClient";
 

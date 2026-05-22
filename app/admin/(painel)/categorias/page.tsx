@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getAll as getCategorias } from "@/lib/categorias";
 import { getAll as getProjetos } from "@/lib/projetos";
 import AdminCategoriasClient from "./AdminCategoriasClient";

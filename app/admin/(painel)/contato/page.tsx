@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { get } from "@/lib/contato";
 import AdminContatoClient from "./AdminContatoClient";
 

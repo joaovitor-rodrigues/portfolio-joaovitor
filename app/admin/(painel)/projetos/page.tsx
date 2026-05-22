@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { getAll as getProjetos } from "@/lib/projetos";
 import { getAll as getCategorias } from "@/lib/categorias";

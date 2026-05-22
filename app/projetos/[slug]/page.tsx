@@ -3,6 +3,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { getBySlug } from "@/lib/projetos";
 import { getAll as getCategorias } from "@/lib/categorias";
+import { getAll as getFuncoes } from "@/lib/funcoes";
 import ProjetoClient from "./ProjetoClient";
 import Link from "next/link";
 
@@ -11,9 +12,10 @@ interface Props {
 }
 
 export default async function ProjetoPage({ params }: Props) {
-  const [projeto, categorias] = await Promise.all([
+  const [projeto, categorias, funcoes] = await Promise.all([
     getBySlug(params.slug),
     getCategorias(),
+    getFuncoes(),
   ]);
 
   if (!projeto || !projeto.publicado) notFound();
@@ -28,7 +30,7 @@ export default async function ProjetoPage({ params }: Props) {
           <span className="text-[#111118]">{projeto.titulo}</span>
         </nav>
 
-        <ProjetoClient projeto={projeto} categorias={categorias} />
+        <ProjetoClient projeto={projeto} categorias={categorias} funcoes={funcoes} />
       </main>
       <Footer />
     </>

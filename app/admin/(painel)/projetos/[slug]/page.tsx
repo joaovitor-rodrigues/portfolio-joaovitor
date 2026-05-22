@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import { getBySlug } from "@/lib/projetos";
 import { getAll as getCategorias } from "@/lib/categorias";
+import { getAll as getFuncoes } from "@/lib/funcoes";
 import ProjectForm from "@/components/admin/ProjectForm";
 
 interface Props {
@@ -10,9 +11,10 @@ interface Props {
 }
 
 export default async function EditarProjetoPage({ params }: Props) {
-  const [projeto, categorias] = await Promise.all([
+  const [projeto, categorias, funcoes] = await Promise.all([
     getBySlug(params.slug),
     getCategorias(),
+    getFuncoes(),
   ]);
 
   if (!projeto) notFound();
@@ -24,7 +26,7 @@ export default async function EditarProjetoPage({ params }: Props) {
         <p className="mt-1 text-sm text-[#6B7280]">{projeto.titulo}</p>
       </div>
       <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
-        <ProjectForm projeto={projeto} categorias={categorias} mode="edit" />
+        <ProjectForm projeto={projeto} categorias={categorias} funcoes={funcoes} mode="edit" />
       </div>
     </div>
   );

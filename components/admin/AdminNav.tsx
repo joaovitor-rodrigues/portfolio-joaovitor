@@ -7,6 +7,7 @@ const navLinks = [
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/projetos", label: "Projetos" },
   { href: "/admin/categorias", label: "Categorias" },
+  { href: "/admin/funcoes", label: "Funções" },
   { href: "/admin/site", label: "Página Inicial" },
   { href: "/admin/sobre", label: "Sobre" },
   { href: "/admin/contato", label: "Contato" },

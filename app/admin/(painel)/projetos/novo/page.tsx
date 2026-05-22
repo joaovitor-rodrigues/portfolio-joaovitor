@@ -1,10 +1,14 @@
 export const dynamic = "force-dynamic";
 
 import { getAll as getCategorias } from "@/lib/categorias";
+import { getAll as getFuncoes } from "@/lib/funcoes";
 import ProjectForm from "@/components/admin/ProjectForm";
 
 export default async function NovoprojetoPage() {
-  const categorias = await getCategorias();
+  const [categorias, funcoes] = await Promise.all([
+    getCategorias(),
+    getFuncoes(),
+  ]);
   return (
     <div>
       <div className="mb-8">
@@ -12,7 +16,7 @@ export default async function NovoprojetoPage() {
         <p className="mt-1 text-sm text-[#6B7280]">Preencha os campos abaixo para criar um novo projeto</p>
       </div>
       <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
-        <ProjectForm categorias={categorias} mode="new" />
+        <ProjectForm categorias={categorias} funcoes={funcoes} mode="new" />
       </div>
     </div>
   );

@@ -2,13 +2,15 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Projeto, Festival, Premio } from "@/lib/projetos";
+import { Projeto, Festival, Premio, MembroEquipe } from "@/lib/projetos";
 import { resolveImageUrl } from "@/lib/gdrive";
 import { Categoria } from "@/lib/categorias";
+import { FuncaoEquipe } from "@/lib/funcoes";
 
 interface Props {
   projeto?: Projeto;
   categorias: Categoria[];
+  funcoes: FuncaoEquipe[];
   mode: "new" | "edit";
 }
 
@@ -23,7 +25,7 @@ function slugify(text: string): string {
     .replace(/-+/g, "-");
 }
 
-export default function ProjectForm({ projeto, categorias, mode }: Props) {
+export default function ProjectForm({ projeto, categorias, funcoes, mode }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,6 +37,7 @@ export default function ProjectForm({ projeto, categorias, mode }: Props) {
     ano: projeto?.ano?.toString() || new Date().getFullYear().toString(),
     duracao: projeto?.duracao || "",
     genero: projeto?.genero || "",
+    sinopse: projeto?.sinopse || "",
     descricaoCurta: projeto?.descricaoCurta || "",
     descricaoLonga: projeto?.descricaoLonga || "",
     thumb: projeto?.thumb || "",
@@ -74,6 +77,10 @@ export default function ProjectForm({ projeto, categorias, mode }: Props) {
   // Prêmios
   const [premios, setPremios] = useState<Premio[]>(projeto?.premios ?? []);
   const [mostrarPremios, setMostrarPremios] = useState(projeto?.mostrarPremios ?? true);
+
+  // Equipe
+  const [equipe, setEquipe] = useState<MembroEquipe[]>(projeto?.equipe ?? []);
+  const [mostrarEquipe, setMostrarEquipe] = useState(projeto?.mostrarEquipe ?? true);
 
   const [slugManual, setSlugManual] = useState(mode === "edit");
 
@@ -174,6 +181,8 @@ export default function ProjectForm({ projeto, categorias, mode }: Props) {
       mostrarFestivais,
       premios,
       mostrarPremios,
+      equipe,
+      mostrarEquipe,
     };
 
     try {
@@ -334,6 +343,22 @@ export default function ProjectForm({ projeto, categorias, mode }: Props) {
           onChange={handleChange}
           className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
           placeholder="Ex: Drama, Documentário"
+        />
+      </div>
+
+      {/* Sinopse */}
+      <div>
+        <label className="block text-sm font-medium text-[#374151] mb-1">
+          Sinopse
+          <span className="ml-1 text-xs font-normal text-[#9CA3AF]">(resumo narrativo do projeto)</span>
+        </label>
+        <textarea
+          name="sinopse"
+          value={form.sinopse}
+          onChange={handleChange}
+          rows={4}
+          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400 resize-y"
+          placeholder="Uma breve sinopse do projeto…"
         />
       </div>
 
@@ -667,6 +692,81 @@ export default function ProjectForm({ projeto, categorias, mode }: Props) {
           className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
         >
           <span className="text-lg leading-none">+</span> Adicionar prêmio
+        </button>
+      </div>
+
+      {/* Equipe */}
+      <div className="border border-[#E5E7EB] rounded-xl p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-[#374151]">Equipe</h3>
+            <p className="text-xs text-[#9CA3AF] mt-0.5">Membros que trabalharam no projeto</p>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="text-xs text-[#6B7280]">{mostrarEquipe ? "Visível" : "Oculto"}</span>
+            <input
+              type="checkbox"
+              checked={mostrarEquipe}
+              onChange={(e) => setMostrarEquipe(e.target.checked)}
+              className="w-4 h-4 rounded accent-purple-600"
+            />
+          </label>
+        </div>
+
+        {funcoes.length === 0 && (
+          <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            Nenhuma função cadastrada. Cadastre funções em{" "}
+            <a href="/admin/funcoes" className="underline font-medium">Admin → Funções</a> antes de adicionar membros.
+          </p>
+        )}
+
+        <div className="space-y-3">
+          {equipe.map((m, idx) => (
+            <div key={m.id} className="grid gap-2 bg-[#F8F8FA] p-3 rounded-lg border border-[#E5E7EB]">
+              <div className="flex gap-2">
+                {/* Nome */}
+                <input
+                  type="text"
+                  value={m.nome}
+                  onChange={(e) => setEquipe((prev) => prev.map((x, i) => i === idx ? { ...x, nome: e.target.value } : x))}
+                  placeholder="Nome do membro"
+                  className="flex-1 border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                />
+                {/* Função */}
+                <select
+                  value={m.funcaoId}
+                  onChange={(e) => setEquipe((prev) => prev.map((x, i) => i === idx ? { ...x, funcaoId: e.target.value } : x))}
+                  className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white text-[#374151] min-w-0 w-48"
+                >
+                  <option value="">— Selecione uma função</option>
+                  {funcoes.map((f) => (
+                    <option key={f.id} value={f.id}>{f.nome}</option>
+                  ))}
+                </select>
+                {/* Remover */}
+                <button
+                  type="button"
+                  onClick={() => setEquipe((prev) => prev.filter((_, i) => i !== idx))}
+                  className="px-3 py-2 text-[#EF4444] hover:bg-red-50 rounded-lg text-sm transition-colors border border-[#E5E7EB] bg-white flex-shrink-0"
+                >✕</button>
+              </div>
+              {/* Foto (opcional) */}
+              <input
+                type="url"
+                value={m.fotoUrl ?? ""}
+                onChange={(e) => setEquipe((prev) => prev.map((x, i) => i === idx ? { ...x, fotoUrl: e.target.value || undefined } : x))}
+                placeholder="URL da foto do membro (opcional)"
+                className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+              />
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => setEquipe((prev) => [...prev, { id: `m-${Date.now()}`, nome: "", funcaoId: "", fotoUrl: undefined }])}
+          className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
+        >
+          <span className="text-lg leading-none">+</span> Adicionar membro
         </button>
       </div>
 

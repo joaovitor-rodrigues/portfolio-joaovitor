@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
       : body.categoriaId
       ? [body.categoriaId]
       : [],
+    sinopse: body.sinopse || "",
     descricaoCurta: body.descricaoCurta || "",
     descricaoLonga: body.descricaoLonga || "",
     thumb: body.thumb || "",
@@ -75,6 +76,8 @@ export async function POST(request: NextRequest) {
     premios: Array.isArray(body.premios) ? body.premios : [],
     mostrarFestivais: body.mostrarFestivais !== false,
     mostrarPremios: body.mostrarPremios !== false,
+    equipe: Array.isArray(body.equipe) ? body.equipe : [],
+    mostrarEquipe: body.mostrarEquipe !== false,
   });
 
   return NextResponse.json(novo, { status: 201 });

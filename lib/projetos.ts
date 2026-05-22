@@ -15,6 +15,13 @@ export interface Premio {
   festivalId?: string;
 }
 
+export interface MembroEquipe {
+  id: string;
+  nome: string;
+  funcaoId: string;
+  fotoUrl?: string;
+}
+
 export interface Projeto {
   slug: string;
   titulo: string;
@@ -26,6 +33,7 @@ export interface Projeto {
   /** @deprecated use categorias[] */
   categoriaId?: string;
   categorias: string[];
+  sinopse: string;
   descricaoCurta: string;
   descricaoLonga: string;
   thumb: string;
@@ -38,6 +46,8 @@ export interface Projeto {
   premios: Premio[];
   mostrarFestivais: boolean;
   mostrarPremios: boolean;
+  equipe: MembroEquipe[];
+  mostrarEquipe: boolean;
 }
 
 function normalize(p: Projeto): Projeto {
@@ -48,6 +58,9 @@ function normalize(p: Projeto): Projeto {
     mostrarFestivais: p.mostrarFestivais ?? true,
     mostrarPremios: p.mostrarPremios ?? true,
     categorias: p.categorias ?? [],
+    sinopse: p.sinopse ?? "",
+    equipe: p.equipe ?? [],
+    mostrarEquipe: p.mostrarEquipe ?? true,
   };
   if (base.categorias.length === 0 && base.categoriaId) {
     base.categorias = [base.categoriaId];

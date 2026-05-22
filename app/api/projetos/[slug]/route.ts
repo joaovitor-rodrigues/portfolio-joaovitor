@@ -29,6 +29,7 @@ export async function PUT(
     ano: Number(body.ano),
     formato: Array.isArray(body.formato) ? body.formato : [],
     galeria: Array.isArray(body.galeria) ? body.galeria : [],
+    equipe: Array.isArray(body.equipe) ? body.equipe : [],
   });
 
   if (!updated) {

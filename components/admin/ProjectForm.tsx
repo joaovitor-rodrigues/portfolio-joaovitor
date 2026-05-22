@@ -78,9 +78,71 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
   const [premios, setPremios] = useState<Premio[]>(projeto?.premios ?? []);
   const [mostrarPremios, setMostrarPremios] = useState(projeto?.mostrarPremios ?? true);
 
-  // Equipe
-  const [equipe, setEquipe] = useState<MembroEquipe[]>(projeto?.equipe ?? []);
+  // Equipe — rows derivados de todas as funções cadastradas
+  type EquipeRow = {
+    funcaoId: string;
+    funcaoNome: string;
+    nome: string;
+    instagramUrl: string;
+    fotoUrl: string;
+  };
+
+  function buildEquipeRows(): EquipeRow[] {
+    const rows: EquipeRow[] = [];
+    // Preserva ordem salva anteriormente (funcoes com nome preenchido primeiro)
+    for (const m of projeto?.equipe ?? []) {
+      const funcao = funcoes.find((f) => f.id === m.funcaoId);
+      if (funcao) {
+        rows.push({
+          funcaoId: m.funcaoId,
+          funcaoNome: funcao.nome,
+          nome: m.nome,
+          instagramUrl: m.instagramUrl ?? "",
+          fotoUrl: m.fotoUrl ?? "",
+        });
+      }
+    }
+    // Adiciona funções ainda não presentes (sem nome)
+    for (const f of funcoes) {
+      if (!rows.find((r) => r.funcaoId === f.id)) {
+        rows.push({ funcaoId: f.id, funcaoNome: f.nome, nome: "", instagramUrl: "", fotoUrl: "" });
+      }
+    }
+    return rows;
+  }
+
+  const [equipeRows, setEquipeRows] = useState<EquipeRow[]>(buildEquipeRows);
   const [mostrarEquipe, setMostrarEquipe] = useState(projeto?.mostrarEquipe ?? true);
+
+  // Drag-to-reorder equipe
+  const dragEquipeIdx = useRef<number | null>(null);
+  const dragOverEquipeIdx = useRef<number | null>(null);
+
+  function onEquipeDragStart(index: number) { dragEquipeIdx.current = index; }
+  function onEquipeDragOver(e: React.DragEvent, index: number) { e.preventDefault(); dragOverEquipeIdx.current = index; }
+  function onEquipeDrop() {
+    const from = dragEquipeIdx.current;
+    const to = dragOverEquipeIdx.current;
+    if (from !== null && to !== null && from !== to) {
+      setEquipeRows((prev) => {
+        const next = [...prev];
+        const [item] = next.splice(from, 1);
+        next.splice(to, 0, item);
+        return next;
+      });
+    }
+    dragEquipeIdx.current = null;
+    dragOverEquipeIdx.current = null;
+  }
+  function moveEquipeRow(from: number, to: number) {
+    if (to < 0 || to >= equipeRows.length) return;
+    setEquipeRows((prev) => {
+      const next = [...prev];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      return next;
+    });
+  }
 
   const [slugManual, setSlugManual] = useState(mode === "edit");
 
@@ -181,7 +243,15 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
       mostrarFestivais,
       premios,
       mostrarPremios,
-      equipe,
+      equipe: equipeRows
+        .filter((r) => r.nome.trim() !== "")
+        .map(({ funcaoId, nome, instagramUrl, fotoUrl }) => ({
+          id: funcaoId,
+          funcaoId,
+          nome: nome.trim(),
+          instagramUrl: instagramUrl.trim() || undefined,
+          fotoUrl: fotoUrl.trim() || undefined,
+        })),
       mostrarEquipe,
     };
 
@@ -700,7 +770,9 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-[#374151]">Equipe</h3>
-            <p className="text-xs text-[#9CA3AF] mt-0.5">Membros que trabalharam no projeto</p>
+            <p className="text-xs text-[#9CA3AF] mt-0.5">
+              Preencha os profissionais de cada função. Arraste para reordenar.
+            </p>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
             <span className="text-xs text-[#6B7280]">{mostrarEquipe ? "Visível" : "Oculto"}</span>
@@ -713,61 +785,80 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
           </label>
         </div>
 
-        {funcoes.length === 0 && (
+        {funcoes.length === 0 ? (
           <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
             Nenhuma função cadastrada. Cadastre funções em{" "}
-            <a href="/admin/funcoes" className="underline font-medium">Admin → Funções</a> antes de adicionar membros.
+            <a href="/admin/funcoes" className="underline font-medium">Admin → Funções</a>.
           </p>
-        )}
+        ) : (
+          <div className="space-y-2">
+            {equipeRows.map((row, idx) => (
+              <div
+                key={row.funcaoId}
+                draggable
+                onDragStart={() => onEquipeDragStart(idx)}
+                onDragOver={(e) => onEquipeDragOver(e, idx)}
+                onDrop={onEquipeDrop}
+                className="flex gap-2 items-start bg-[#F8F8FA] p-3 rounded-lg border border-[#E5E7EB] group"
+              >
+                {/* Drag handle + up/down */}
+                <div className="flex flex-col items-center gap-0.5 flex-shrink-0 pt-1">
+                  <div className="cursor-grab active:cursor-grabbing p-1 text-[#D1D5DB] hover:text-[#9CA3AF] transition-colors">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+                      <circle cx="5" cy="4" r="1.2" /><circle cx="5" cy="8" r="1.2" /><circle cx="5" cy="12" r="1.2" />
+                      <circle cx="11" cy="4" r="1.2" /><circle cx="11" cy="8" r="1.2" /><circle cx="11" cy="12" r="1.2" />
+                    </svg>
+                  </div>
+                  <button type="button" onClick={() => moveEquipeRow(idx, idx - 1)} disabled={idx === 0}
+                    className="p-0.5 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
+                    </svg>
+                  </button>
+                  <button type="button" onClick={() => moveEquipeRow(idx, idx + 1)} disabled={idx === equipeRows.length - 1}
+                    className="p-0.5 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
 
-        <div className="space-y-3">
-          {equipe.map((m, idx) => (
-            <div key={m.id} className="grid gap-2 bg-[#F8F8FA] p-3 rounded-lg border border-[#E5E7EB]">
-              <div className="flex gap-2">
-                {/* Nome */}
-                <input
-                  type="text"
-                  value={m.nome}
-                  onChange={(e) => setEquipe((prev) => prev.map((x, i) => i === idx ? { ...x, nome: e.target.value } : x))}
-                  placeholder="Nome do membro"
-                  className="flex-1 border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-                />
-                {/* Função */}
-                <select
-                  value={m.funcaoId}
-                  onChange={(e) => setEquipe((prev) => prev.map((x, i) => i === idx ? { ...x, funcaoId: e.target.value } : x))}
-                  className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white text-[#374151] min-w-0 w-48"
-                >
-                  <option value="">— Selecione uma função</option>
-                  {funcoes.map((f) => (
-                    <option key={f.id} value={f.id}>{f.nome}</option>
-                  ))}
-                </select>
-                {/* Remover */}
-                <button
-                  type="button"
-                  onClick={() => setEquipe((prev) => prev.filter((_, i) => i !== idx))}
-                  className="px-3 py-2 text-[#EF4444] hover:bg-red-50 rounded-lg text-sm transition-colors border border-[#E5E7EB] bg-white flex-shrink-0"
-                >✕</button>
+                {/* Conteúdo */}
+                <div className="flex-1 grid gap-2">
+                  {/* Rótulo da função */}
+                  <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">
+                    {row.funcaoNome}
+                  </p>
+                  {/* Nome do profissional */}
+                  <input
+                    type="text"
+                    value={row.nome}
+                    onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, nome: e.target.value } : x))}
+                    placeholder="Nome do profissional (opcional)"
+                    className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                  />
+                  {/* Instagram + Foto */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={row.instagramUrl}
+                      onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, instagramUrl: e.target.value } : x))}
+                      placeholder="@instagram (opcional)"
+                      className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                    />
+                    <input
+                      type="url"
+                      value={row.fotoUrl}
+                      onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, fotoUrl: e.target.value } : x))}
+                      placeholder="URL da foto (opcional)"
+                      className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                    />
+                  </div>
+                </div>
               </div>
-              {/* Foto (opcional) */}
-              <input
-                type="url"
-                value={m.fotoUrl ?? ""}
-                onChange={(e) => setEquipe((prev) => prev.map((x, i) => i === idx ? { ...x, fotoUrl: e.target.value || undefined } : x))}
-                placeholder="URL da foto do membro (opcional)"
-                className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-              />
-            </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={() => setEquipe((prev) => [...prev, { id: `m-${Date.now()}`, nome: "", funcaoId: "", fotoUrl: undefined }])}
-          className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
-        >
-          <span className="text-lg leading-none">+</span> Adicionar membro
-        </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Checkboxes */}

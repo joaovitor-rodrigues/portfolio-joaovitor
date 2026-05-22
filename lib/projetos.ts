@@ -20,6 +20,7 @@ export interface MembroEquipe {
   nome: string;
   funcaoId: string;
   fotoUrl?: string;
+  instagramUrl?: string;
 }
 
 export interface Projeto {

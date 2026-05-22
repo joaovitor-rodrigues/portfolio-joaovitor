@@ -23,6 +23,12 @@ export interface MembroEquipe {
   instagramUrl?: string;
 }
 
+export interface MembroElenco {
+  id: string;
+  ator: string;
+  personagem: string;
+}
+
 export interface Projeto {
   slug: string;
   titulo: string;
@@ -47,6 +53,8 @@ export interface Projeto {
   premios: Premio[];
   mostrarFestivais: boolean;
   mostrarPremios: boolean;
+  elenco: MembroElenco[];
+  mostrarElenco: boolean;
   equipe: MembroEquipe[];
   mostrarEquipe: boolean;
 }
@@ -60,6 +68,8 @@ function normalize(p: Projeto): Projeto {
     mostrarPremios: p.mostrarPremios ?? true,
     categorias: p.categorias ?? [],
     sinopse: p.sinopse ?? "",
+    elenco: p.elenco ?? [],
+    mostrarElenco: p.mostrarElenco ?? true,
     equipe: p.equipe ?? [],
     mostrarEquipe: p.mostrarEquipe ?? true,
   };

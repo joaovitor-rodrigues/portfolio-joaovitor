@@ -164,6 +164,43 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [] }
         </div>
       )}
 
+      {/* Elenco */}
+      {projeto.mostrarElenco && projeto.elenco?.filter((m) => m.ator?.trim()).length > 0 && (
+        <div className="mt-12">
+          <h2 className="font-display text-2xl font-normal text-[#111118] mb-6 flex items-center gap-2">
+            <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+            Elenco
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 w-full">
+            {projeto.elenco
+              .filter((m) => m.ator?.trim())
+              .map((m) => (
+                <div key={m.id} className="flex flex-col gap-1 p-4 rounded-xl border border-[#E5E7EB] bg-[#F8F8FA]">
+                  {/* Avatar com inicial */}
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                      <span className="text-purple-600 text-sm font-semibold">
+                        {m.ator.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-sm font-medium text-[#111118] leading-tight truncate">
+                      {m.ator}
+                    </span>
+                  </div>
+                  {/* Personagem */}
+                  {m.personagem && (
+                    <p className="text-xs text-[#6B7280] pl-0.5 truncate">
+                      {m.personagem}
+                    </p>
+                  )}
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
       {/* Equipe */}
       {projeto.mostrarEquipe && projeto.equipe?.filter((m) => m.nome?.trim()).length > 0 && (
         <div className="mt-12">

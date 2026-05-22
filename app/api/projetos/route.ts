@@ -76,6 +76,8 @@ export async function POST(request: NextRequest) {
     premios: Array.isArray(body.premios) ? body.premios : [],
     mostrarFestivais: body.mostrarFestivais !== false,
     mostrarPremios: body.mostrarPremios !== false,
+    elenco: Array.isArray(body.elenco) ? body.elenco : [],
+    mostrarElenco: body.mostrarElenco !== false,
     equipe: Array.isArray(body.equipe) ? body.equipe : [],
     mostrarEquipe: body.mostrarEquipe !== false,
   });

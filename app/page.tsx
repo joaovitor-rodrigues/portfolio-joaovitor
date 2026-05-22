@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import ProjectCard from "@/components/ProjectCard";
+import Minigame from "@/components/Minigame";
 import { getAll as getProjetos } from "@/lib/projetos";
 import { getAll as getCategorias } from "@/lib/categorias";
 import { get as getSite } from "@/lib/site";
@@ -121,6 +122,16 @@ export default async function Home() {
             </div>
           </section>
         )}
+        {/* Minigame */}
+        <section className="px-6 pb-24 max-w-6xl mx-auto">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xs font-mono text-[#9CA3AF] bg-[#F3F4F6] border border-[#E5E7EB] px-2.5 py-1 rounded-full select-none">
+              🎬 mini game
+            </span>
+            <span className="text-xs text-[#D1D5DB] hidden sm:inline">espaço / toque para jogar</span>
+          </div>
+          <Minigame />
+        </section>
       </main>
       <Footer />
     </>

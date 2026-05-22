@@ -111,7 +111,7 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
     });
   }
 
-  // Equipe — rows derivados de todas as funções cadastradas
+  // Equipe — rows adicionados manualmente pelo usuário
   type EquipeRow = {
     funcaoId: string;
     funcaoNome: string;
@@ -122,7 +122,7 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
 
   function buildEquipeRows(): EquipeRow[] {
     const rows: EquipeRow[] = [];
-    // Preserva ordem salva anteriormente (funcoes com nome preenchido primeiro)
+    // Só inclui as funções já salvas no projeto
     for (const m of projeto?.equipe ?? []) {
       const funcao = funcoes.find((f) => f.id === m.funcaoId);
       if (funcao) {
@@ -135,16 +135,26 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
         });
       }
     }
-    // Adiciona funções ainda não presentes (sem nome)
-    for (const f of funcoes) {
-      if (!rows.find((r) => r.funcaoId === f.id)) {
-        rows.push({ funcaoId: f.id, funcaoNome: f.nome, nome: "", instagramUrl: "", fotoUrl: "" });
-      }
-    }
     return rows;
   }
 
   const [equipeRows, setEquipeRows] = useState<EquipeRow[]>(buildEquipeRows);
+  const [selectedFuncaoId, setSelectedFuncaoId] = useState("");
+
+  function addEquipeRow() {
+    if (!selectedFuncaoId) return;
+    const funcao = funcoes.find((f) => f.id === selectedFuncaoId);
+    if (!funcao) return;
+    setEquipeRows((prev) => [
+      ...prev,
+      { funcaoId: selectedFuncaoId, funcaoNome: funcao.nome, nome: "", instagramUrl: "", fotoUrl: "" },
+    ]);
+    setSelectedFuncaoId("");
+  }
+
+  function removeEquipeRow(idx: number) {
+    setEquipeRows((prev) => prev.filter((_, i) => i !== idx));
+  }
   const [mostrarEquipe, setMostrarEquipe] = useState(projeto?.mostrarEquipe ?? true);
 
   // Drag-to-reorder equipe
@@ -933,72 +943,117 @@ export default function ProjectForm({ projeto, categorias, funcoes, mode }: Prop
             <a href="/admin/funcoes" className="underline font-medium">Admin → Funções</a>.
           </p>
         ) : (
-          <div className="space-y-2">
-            {equipeRows.map((row, idx) => (
-              <div
-                key={row.funcaoId}
-                draggable
-                onDragStart={() => onEquipeDragStart(idx)}
-                onDragOver={(e) => onEquipeDragOver(e, idx)}
-                onDrop={onEquipeDrop}
-                className="flex gap-2 items-start bg-[#F8F8FA] p-3 rounded-lg border border-[#E5E7EB] group"
-              >
-                {/* Drag handle + up/down */}
-                <div className="flex flex-col items-center gap-0.5 flex-shrink-0 pt-1">
-                  <div className="cursor-grab active:cursor-grabbing p-1 text-[#D1D5DB] hover:text-[#9CA3AF] transition-colors">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
-                      <circle cx="5" cy="4" r="1.2" /><circle cx="5" cy="8" r="1.2" /><circle cx="5" cy="12" r="1.2" />
-                      <circle cx="11" cy="4" r="1.2" /><circle cx="11" cy="8" r="1.2" /><circle cx="11" cy="12" r="1.2" />
-                    </svg>
-                  </div>
-                  <button type="button" onClick={() => moveEquipeRow(idx, idx - 1)} disabled={idx === 0}
-                    className="p-0.5 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
-                    </svg>
-                  </button>
-                  <button type="button" onClick={() => moveEquipeRow(idx, idx + 1)} disabled={idx === equipeRows.length - 1}
-                    className="p-0.5 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                </div>
+          <div className="space-y-3">
+            {/* Rows adicionados */}
+            {equipeRows.length > 0 && (
+              <div className="space-y-2">
+                {equipeRows.map((row, idx) => (
+                  <div
+                    key={row.funcaoId}
+                    draggable
+                    onDragStart={() => onEquipeDragStart(idx)}
+                    onDragOver={(e) => onEquipeDragOver(e, idx)}
+                    onDrop={onEquipeDrop}
+                    className="flex gap-2 items-start bg-[#F8F8FA] p-3 rounded-lg border border-[#E5E7EB] group"
+                  >
+                    {/* Drag handle + up/down */}
+                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0 pt-1">
+                      <div className="cursor-grab active:cursor-grabbing p-1 text-[#D1D5DB] hover:text-[#9CA3AF] transition-colors">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+                          <circle cx="5" cy="4" r="1.2" /><circle cx="5" cy="8" r="1.2" /><circle cx="5" cy="12" r="1.2" />
+                          <circle cx="11" cy="4" r="1.2" /><circle cx="11" cy="8" r="1.2" /><circle cx="11" cy="12" r="1.2" />
+                        </svg>
+                      </div>
+                      <button type="button" onClick={() => moveEquipeRow(idx, idx - 1)} disabled={idx === 0}
+                        className="p-0.5 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
+                        </svg>
+                      </button>
+                      <button type="button" onClick={() => moveEquipeRow(idx, idx + 1)} disabled={idx === equipeRows.length - 1}
+                        className="p-0.5 text-[#9CA3AF] hover:text-[#374151] disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    </div>
 
-                {/* Conteúdo */}
-                <div className="flex-1 grid gap-2">
-                  {/* Rótulo da função */}
-                  <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">
-                    {row.funcaoNome}
-                  </p>
-                  {/* Nome do profissional */}
-                  <input
-                    type="text"
-                    value={row.nome}
-                    onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, nome: e.target.value } : x))}
-                    placeholder="Nome do profissional (opcional)"
-                    className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-                  />
-                  {/* Instagram + Foto */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="text"
-                      value={row.instagramUrl}
-                      onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, instagramUrl: e.target.value } : x))}
-                      placeholder="@instagram (opcional)"
-                      className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-                    />
-                    <input
-                      type="url"
-                      value={row.fotoUrl}
-                      onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, fotoUrl: e.target.value } : x))}
-                      placeholder="URL da foto (opcional)"
-                      className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-                    />
+                    {/* Conteúdo */}
+                    <div className="flex-1 grid gap-2">
+                      {/* Rótulo da função */}
+                      <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">
+                        {row.funcaoNome}
+                      </p>
+                      {/* Nome do profissional */}
+                      <input
+                        type="text"
+                        value={row.nome}
+                        onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, nome: e.target.value } : x))}
+                        placeholder="Nome do profissional"
+                        className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                      />
+                      {/* Instagram + Foto */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={row.instagramUrl}
+                          onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, instagramUrl: e.target.value } : x))}
+                          placeholder="@instagram (opcional)"
+                          className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                        />
+                        <input
+                          type="url"
+                          value={row.fotoUrl}
+                          onChange={(e) => setEquipeRows((prev) => prev.map((x, i) => i === idx ? { ...x, fotoUrl: e.target.value } : x))}
+                          placeholder="URL da foto (opcional)"
+                          className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Remover */}
+                    <button
+                      type="button"
+                      onClick={() => removeEquipeRow(idx)}
+                      className="px-2.5 py-2 text-[#EF4444] hover:bg-red-50 rounded-lg text-sm transition-colors border border-[#E5E7EB] bg-white flex-shrink-0 mt-0.5"
+                      title="Remover função"
+                    >✕</button>
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
+            )}
+
+            {/* Seletor para adicionar nova função */}
+            {funcoes.filter((f) => !equipeRows.some((r) => r.funcaoId === f.id)).length > 0 ? (
+              <div className="flex gap-2">
+                <select
+                  value={selectedFuncaoId}
+                  onChange={(e) => setSelectedFuncaoId(e.target.value)}
+                  className="flex-1 border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-300 text-[#374151]"
+                >
+                  <option value="">Selecionar função para adicionar…</option>
+                  {funcoes
+                    .filter((f) => !equipeRows.some((r) => r.funcaoId === f.id))
+                    .map((f) => (
+                      <option key={f.id} value={f.id}>{f.nome}</option>
+                    ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={addEquipeRow}
+                  disabled={!selectedFuncaoId}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+                >
+                  + Adicionar
+                </button>
+              </div>
+            ) : equipeRows.length > 0 ? (
+              <p className="text-xs text-[#9CA3AF]">Todas as funções cadastradas já foram adicionadas.</p>
+            ) : null}
+
+            {equipeRows.length === 0 && funcoes.length > 0 && !selectedFuncaoId && (
+              <p className="text-xs text-[#9CA3AF]">Nenhuma função adicionada. Selecione acima para incluir membros da equipe.</p>
+            )}
           </div>
         )}
       </div>

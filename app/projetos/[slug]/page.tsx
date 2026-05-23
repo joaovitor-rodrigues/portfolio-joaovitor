@@ -5,6 +5,7 @@ import { getBySlug } from "@/lib/projetos";
 import { getAll as getCategorias } from "@/lib/categorias";
 import { getAll as getFuncoes } from "@/lib/funcoes";
 import { getAll as getDepartamentos } from "@/lib/departamentos";
+import { getAll as getPessoas } from "@/lib/pessoas";
 import ProjetoClient from "./ProjetoClient";
 import Link from "next/link";
 
@@ -13,11 +14,12 @@ interface Props {
 }
 
 export default async function ProjetoPage({ params }: Props) {
-  const [projeto, categorias, funcoes, departamentos] = await Promise.all([
+  const [projeto, categorias, funcoes, departamentos, pessoas] = await Promise.all([
     getBySlug(params.slug),
     getCategorias(),
     getFuncoes(),
     getDepartamentos(),
+    getPessoas(),
   ]);
 
   if (!projeto || !projeto.publicado) notFound();
@@ -37,6 +39,7 @@ export default async function ProjetoPage({ params }: Props) {
           categorias={categorias}
           funcoes={funcoes}
           departamentos={departamentos}
+          pessoas={pessoas}
         />
       </main>
       <Footer />

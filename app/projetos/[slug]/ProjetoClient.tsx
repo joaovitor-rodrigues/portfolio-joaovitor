@@ -6,6 +6,7 @@ import { Projeto } from "@/lib/projetos";
 import { Categoria } from "@/lib/categorias";
 import { FuncaoEquipe } from "@/lib/funcoes";
 import { DepartamentoEquipe } from "@/lib/departamentos";
+import { Pessoa } from "@/lib/pessoas";
 import { resolveImageUrl } from "@/lib/gdrive";
 import Lightbox from "@/components/Lightbox";
 
@@ -15,9 +16,10 @@ interface Props {
   categorias?: Categoria[];
   funcoes?: FuncaoEquipe[];
   departamentos?: DepartamentoEquipe[];
+  pessoas?: Pessoa[];
 }
 
-export default function ProjetoClient({ projeto, categorias = [], funcoes = [], departamentos = [] }: Props) {
+export default function ProjetoClient({ projeto, categorias = [], funcoes = [], departamentos = [], pessoas = [] }: Props) {
   const projCats = (projeto.categorias ?? [])
     .map((id) => categorias.find((c) => c.id === id))
     .filter(Boolean) as Categoria[];
@@ -214,13 +216,15 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [], 
             {projeto.elenco
               .filter((m) => m.ator?.trim())
               .map((m) => {
-                const igUsername = m.instagramUrl?.replace(/^@/, "") ?? null;
+                // Se vinculado a uma Pessoa, usa os dados atuais dela
+                const pessoa = m.pessoaId ? pessoas.find((p) => p.id === m.pessoaId) : undefined;
+                const ator = pessoa?.nome ?? m.ator;
+                const fotoUrl = pessoa?.fotoUrl ?? m.fotoUrl;
+                const instagramUrl = pessoa?.instagramUrl ?? m.instagramUrl;
+                const igUsername = instagramUrl?.replace(/^@/, "") ?? null;
                 const igHandle = igUsername ? `@${igUsername}` : null;
                 const igHref = igUsername ? `https://instagram.com/${igUsername}` : null;
-                // Foto manual tem prioridade; caso contrário, tenta avatar do Instagram
-                const avatarSrc = m.fotoUrl
-                  ? resolveImageUrl(m.fotoUrl)
-                  : null;
+                const avatarSrc = fotoUrl ? resolveImageUrl(fotoUrl) : null;
                 return (
                   <div key={m.id} className="flex flex-col gap-2 p-4 rounded-xl border border-[#E5E7EB] bg-[#F8F8FA]">
                     {/* Avatar + Nome do ator */}
@@ -228,17 +232,17 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [], 
                       {avatarSrc ? (
                         <img
                           src={avatarSrc}
-                          alt={m.ator}
+                          alt={ator}
                           className="w-9 h-9 rounded-full object-cover flex-shrink-0 border border-[#E5E7EB]"
                         />
                       ) : (
                         <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
                           <span className="text-purple-600 text-sm font-semibold">
-                            {m.ator.charAt(0).toUpperCase()}
+                            {ator.charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}
-                      <span className="text-sm text-[#6B7280] leading-tight truncate">{m.ator}</span>
+                      <span className="text-sm text-[#6B7280] leading-tight truncate">{ator}</span>
                     </div>
                     {/* Personagem — destaque principal */}
                     {m.personagem && (
@@ -334,10 +338,15 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [], 
                         {/* Membros da função */}
                         <div className="flex flex-wrap gap-3">
                           {fg.membros.map((m) => {
-                            const igUsername = m.instagramUrl?.replace(/^@/, "") ?? null;
+                            // Se vinculado a uma Pessoa, usa os dados atuais dela
+                            const pessoa = m.pessoaId ? pessoas.find((p) => p.id === m.pessoaId) : undefined;
+                            const nome = pessoa?.nome ?? m.nome;
+                            const fotoUrl = pessoa?.fotoUrl ?? m.fotoUrl;
+                            const instagramUrl = pessoa?.instagramUrl ?? m.instagramUrl;
+                            const igUsername = instagramUrl?.replace(/^@/, "") ?? null;
                             const igHandle = igUsername ? `@${igUsername}` : null;
                             const igHref = igUsername ? `https://instagram.com/${igUsername}` : null;
-                            const avatarSrc = m.fotoUrl ? resolveImageUrl(m.fotoUrl) : null;
+                            const avatarSrc = fotoUrl ? resolveImageUrl(fotoUrl) : null;
 
                             return (
                               <div
@@ -348,20 +357,20 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [], 
                                 {avatarSrc ? (
                                   <img
                                     src={avatarSrc}
-                                    alt={m.nome}
+                                    alt={nome}
                                     className="w-9 h-9 rounded-full object-cover flex-shrink-0 border border-[#E5E7EB]"
                                   />
                                 ) : (
                                   <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
                                     <span className="text-purple-600 text-sm font-semibold">
-                                      {m.nome.charAt(0).toUpperCase()}
+                                      {nome.charAt(0).toUpperCase()}
                                     </span>
                                   </div>
                                 )}
                                 {/* Nome + Instagram */}
                                 <div className="min-w-0">
                                   <p className="text-sm font-medium text-[#111118] leading-tight truncate">
-                                    {m.nome}
+                                    {nome}
                                   </p>
                                   {igHref && igHandle && (
                                     <a

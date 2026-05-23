@@ -318,6 +318,17 @@ function PessoaCard({
   );
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+const PAGE_SIZE = 10;
+
+/** Remove acentos e converte para minúsculas para comparação insensível a acentos. */
+function norm(str: string) {
+  return str
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
+
 // ─── Componente raiz ─────────────────────────────────────────────────────────
 export default function AdminPessoasClient({
   pessoas: initialPessoas,
@@ -327,12 +338,32 @@ export default function AdminPessoasClient({
   const [showForm, setShowForm] = useState(false);
   const [filtroTipo, setFiltroTipo] = useState<"todos" | Pessoa["tipo"]>("todos");
   const [busca, setBusca] = useState("");
+  const [pagina, setPagina] = useState(1);
 
   const filtradas = pessoas.filter((p) => {
     if (filtroTipo !== "todos" && p.tipo !== filtroTipo) return false;
-    if (busca && !p.nome.toLowerCase().includes(busca.toLowerCase())) return false;
+    if (busca.trim()) {
+      const q = norm(busca.trim());
+      const matchNome = norm(p.nome).includes(q);
+      const matchIg = p.instagramUrl ? norm(p.instagramUrl).includes(q) : false;
+      if (!matchNome && !matchIg) return false;
+    }
     return true;
   });
+
+  const totalPaginas = Math.max(1, Math.ceil(filtradas.length / PAGE_SIZE));
+  const paginaAtual = Math.min(pagina, totalPaginas);
+  const paginadas = filtradas.slice((paginaAtual - 1) * PAGE_SIZE, paginaAtual * PAGE_SIZE);
+
+  function handleBusca(valor: string) {
+    setBusca(valor);
+    setPagina(1);
+  }
+
+  function handleFiltroTipo(valor: "todos" | Pessoa["tipo"]) {
+    setFiltroTipo(valor);
+    setPagina(1);
+  }
 
   return (
     <div className="space-y-6">
@@ -342,13 +373,13 @@ export default function AdminPessoasClient({
           <input
             type="text"
             value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar por nome…"
-            className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-300 w-52"
+            onChange={(e) => handleBusca(e.target.value)}
+            placeholder="Buscar por nome ou @instagram…"
+            className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-300 w-64"
           />
           <select
             value={filtroTipo}
-            onChange={(e) => setFiltroTipo(e.target.value as typeof filtroTipo)}
+            onChange={(e) => handleFiltroTipo(e.target.value as typeof filtroTipo)}
             className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-300 text-[#374151]"
           >
             <option value="todos">Todos os tipos</option>
@@ -372,6 +403,7 @@ export default function AdminPessoasClient({
           onSaved={(nova) => {
             setPessoas((prev) => [nova, ...prev].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")));
             setShowForm(false);
+            setPagina(1);
           }}
           onCancel={() => setShowForm(false)}
         />
@@ -386,7 +418,7 @@ export default function AdminPessoasClient({
         </div>
       ) : (
         <div className="space-y-2">
-          {filtradas.map((p) => (
+          {paginadas.map((p) => (
             <PessoaCard
               key={p.id}
               pessoa={p}
@@ -398,15 +430,86 @@ export default function AdminPessoasClient({
                     .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))
                 )
               }
-              onDeleted={(id) => setPessoas((prev) => prev.filter((x) => x.id !== id))}
+              onDeleted={(id) => {
+                setPessoas((prev) => prev.filter((x) => x.id !== id));
+                setPagina((p) => Math.min(p, Math.max(1, Math.ceil((filtradas.length - 1) / PAGE_SIZE))));
+              }}
             />
           ))}
         </div>
       )}
 
-      <p className="text-xs text-[#9CA3AF] text-right">
-        {filtradas.length} de {pessoas.length} pessoa{pessoas.length !== 1 ? "s" : ""}
-      </p>
+      {/* Rodapé: contagem + paginação */}
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-xs text-[#9CA3AF]">
+          {filtradas.length === pessoas.length
+            ? `${pessoas.length} pessoa${pessoas.length !== 1 ? "s" : ""}`
+            : `${filtradas.length} de ${pessoas.length} pessoa${pessoas.length !== 1 ? "s" : ""}`}
+        </p>
+
+        {totalPaginas > 1 && (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPagina(1)}
+              disabled={paginaAtual === 1}
+              className="px-2 py-1 text-xs rounded-lg border border-[#E5E7EB] text-[#374151] hover:bg-[#F8F8FA] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              title="Primeira página"
+            >
+              «
+            </button>
+            <button
+              onClick={() => setPagina((p) => Math.max(1, p - 1))}
+              disabled={paginaAtual === 1}
+              className="px-2 py-1 text-xs rounded-lg border border-[#E5E7EB] text-[#374151] hover:bg-[#F8F8FA] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              title="Página anterior"
+            >
+              ‹
+            </button>
+
+            {Array.from({ length: totalPaginas }, (_, i) => i + 1)
+              .filter((n) => n === 1 || n === totalPaginas || Math.abs(n - paginaAtual) <= 1)
+              .reduce<(number | "…")[]>((acc, n, i, arr) => {
+                if (i > 0 && n - (arr[i - 1] as number) > 1) acc.push("…");
+                acc.push(n);
+                return acc;
+              }, [])
+              .map((n, i) =>
+                n === "…" ? (
+                  <span key={`sep-${i}`} className="px-1 text-xs text-[#9CA3AF]">…</span>
+                ) : (
+                  <button
+                    key={n}
+                    onClick={() => setPagina(n)}
+                    className={`min-w-[28px] px-2 py-1 text-xs rounded-lg border transition-colors ${
+                      n === paginaAtual
+                        ? "bg-purple-600 text-white border-purple-600 font-semibold"
+                        : "border-[#E5E7EB] text-[#374151] hover:bg-[#F8F8FA]"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                )
+              )}
+
+            <button
+              onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+              disabled={paginaAtual === totalPaginas}
+              className="px-2 py-1 text-xs rounded-lg border border-[#E5E7EB] text-[#374151] hover:bg-[#F8F8FA] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              title="Próxima página"
+            >
+              ›
+            </button>
+            <button
+              onClick={() => setPagina(totalPaginas)}
+              disabled={paginaAtual === totalPaginas}
+              className="px-2 py-1 text-xs rounded-lg border border-[#E5E7EB] text-[#374151] hover:bg-[#F8F8FA] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              title="Última página"
+            >
+              »
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

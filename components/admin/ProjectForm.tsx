@@ -203,6 +203,13 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
   >(null);
   const [pessoaBusca, setPessoaBusca] = useState("");
 
+  function normBusca(str: string) {
+    return str
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase();
+  }
+
   function pessoasSugeridas(): Pessoa[] {
     if (!pessoaPickerTarget) return [];
     const base =
@@ -215,8 +222,10 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
                 p.funcaoIds.includes((pessoaPickerTarget as { funcaoId: string }).funcaoId))
           );
     if (!pessoaBusca.trim()) return base;
+    const q = normBusca(pessoaBusca.trim());
     return base.filter((p) =>
-      p.nome.toLowerCase().includes(pessoaBusca.toLowerCase())
+      normBusca(p.nome).includes(q) ||
+      (p.instagramUrl ? normBusca(p.instagramUrl).includes(q) : false)
     );
   }
 
@@ -1491,7 +1500,7 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
                     >
                       {p.fotoUrl ? (
                         <img
-                          src={p.fotoUrl}
+                          src={resolveImageUrl(p.fotoUrl)}
                           alt={p.nome}
                           className="w-9 h-9 rounded-full object-cover border border-[#E5E7EB] flex-shrink-0"
                         />

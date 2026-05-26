@@ -20,12 +20,12 @@ export default async function ProjetosPage({ searchParams }: Props) {
 
   // Ordena categorias pelo número de projetos publicados (maior primeiro)
   const categorias = allCategorias
-    .map((cat) => ({
-      ...cat,
-      _count: projetos.filter((p) => p.categorias?.includes(cat.id)).length,
-    }))
-    .sort((a, b) => b._count - a._count)
-    .map(({ _count: _, ...cat }) => cat);
+    .slice()
+    .sort(
+      (a, b) =>
+        projetos.filter((p) => p.categorias?.includes(b.id)).length -
+        projetos.filter((p) => p.categorias?.includes(a.id)).length
+    );
 
   if (searchParams.categoria) {
     const cat = categorias.find((c) => c.slug === searchParams.categoria);

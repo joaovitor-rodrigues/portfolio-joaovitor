@@ -910,33 +910,56 @@ export default function ProjectForm({ projeto, categorias, funcoes, departamento
         </div>
         <div className="space-y-3">
           {festivais.map((f, idx) => (
-            <div key={f.id} className="grid grid-cols-3 gap-2 items-start bg-[#F8F8FA] p-3 rounded-lg">
-              <input
-                type="text"
-                value={f.nome}
-                onChange={(e) => setFestivais((prev) => prev.map((x, i) => i === idx ? { ...x, nome: e.target.value } : x))}
-                placeholder="Nome do festival"
-                className="col-span-3 border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-              />
-              <input
-                type="text"
-                value={f.edicao}
-                onChange={(e) => setFestivais((prev) => prev.map((x, i) => i === idx ? { ...x, edicao: e.target.value } : x))}
-                placeholder="Edição / Ano"
-                className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-              />
-              <input
-                type="text"
-                value={f.resultado}
-                onChange={(e) => setFestivais((prev) => prev.map((x, i) => i === idx ? { ...x, resultado: e.target.value } : x))}
-                placeholder="Resultado (ex: Seleção Oficial)"
-                className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
-              />
-              <button
-                type="button"
-                onClick={() => setFestivais((prev) => prev.filter((_, i) => i !== idx))}
-                className="px-3 py-2 text-[#EF4444] hover:bg-red-50 rounded-lg text-sm transition-colors border border-[#E5E7EB] bg-white"
-              >✕</button>
+            <div key={f.id} className="space-y-2 bg-[#F8F8FA] p-3 rounded-lg">
+              {/* Nome do festival + botão remover */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={f.nome}
+                  onChange={(e) => setFestivais((prev) => prev.map((x, i) => i === idx ? { ...x, nome: e.target.value } : x))}
+                  placeholder="Nome do festival"
+                  className="flex-1 border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFestivais((prev) => prev.filter((_, i) => i !== idx))}
+                  className="px-3 py-2 text-[#EF4444] hover:bg-red-50 rounded-lg text-sm transition-colors border border-[#E5E7EB] bg-white"
+                >✕</button>
+              </div>
+              {/* Edição + Resultado */}
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  value={f.edicao}
+                  onChange={(e) => setFestivais((prev) => prev.map((x, i) => i === idx ? { ...x, edicao: e.target.value } : x))}
+                  placeholder="Edição / Ano"
+                  className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                />
+                <input
+                  type="text"
+                  value={f.resultado}
+                  onChange={(e) => setFestivais((prev) => prev.map((x, i) => i === idx ? { ...x, resultado: e.target.value } : x))}
+                  placeholder="Resultado (ex: Seleção Oficial)"
+                  className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                />
+              </div>
+              {/* País + Cidade */}
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  value={f.pais ?? ""}
+                  onChange={(e) => setFestivais((prev) => prev.map((x, i) => i === idx ? { ...x, pais: e.target.value || undefined } : x))}
+                  placeholder="País (ex: Brasil)"
+                  className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                />
+                <input
+                  type="text"
+                  value={f.cidade ?? ""}
+                  onChange={(e) => setFestivais((prev) => prev.map((x, i) => i === idx ? { ...x, cidade: e.target.value || undefined } : x))}
+                  placeholder="Cidade (ex: São Paulo)"
+                  className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 bg-white"
+                />
+              </div>
             </div>
           ))}
         </div>

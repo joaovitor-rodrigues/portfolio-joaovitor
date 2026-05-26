@@ -415,6 +415,15 @@ export default function ProjetoClient({ projeto, categorias = [], funcoes = [], 
                 <div>
                   <p className="font-medium text-[#111118]">{f.nome}</p>
                   {f.edicao && <p className="text-sm text-[#6B7280] mt-0.5">{f.edicao}</p>}
+                  {(f.cidade || f.pais) && (
+                    <p className="text-xs text-[#9CA3AF] mt-1 flex items-center gap-1">
+                      <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {[f.cidade, f.pais].filter(Boolean).join(", ")}
+                    </p>
+                  )}
                 </div>
                 {f.resultado && (
                   <span className="ml-4 flex-shrink-0 px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">

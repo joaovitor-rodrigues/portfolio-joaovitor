@@ -10,10 +10,12 @@ export default async function AdminCategoriasPage() {
     getProjetos(),
   ]);
 
-  const categoriasComContagem = categorias.map((cat) => ({
-    ...cat,
-    count: projetos.filter((p) => p.categoriaId === cat.id).length,
-  }));
+  const categoriasComContagem = categorias
+    .map((cat) => ({
+      ...cat,
+      count: projetos.filter((p) => p.categorias?.includes(cat.id)).length,
+    }))
+    .sort((a, b) => b.count - a.count);
 
   return (
     <div>

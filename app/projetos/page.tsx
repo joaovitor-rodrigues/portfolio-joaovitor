@@ -11,12 +11,21 @@ interface Props {
 }
 
 export default async function ProjetosPage({ searchParams }: Props) {
-  const [allProjetos, categorias] = await Promise.all([
+  const [allProjetos, allCategorias] = await Promise.all([
     getProjetos(),
     getCategorias(),
   ]);
 
   let projetos = allProjetos.filter((p) => p.publicado);
+
+  // Ordena categorias pelo número de projetos publicados (maior primeiro)
+  const categorias = allCategorias
+    .map((cat) => ({
+      ...cat,
+      _count: projetos.filter((p) => p.categorias?.includes(cat.id)).length,
+    }))
+    .sort((a, b) => b._count - a._count)
+    .map(({ _count: _, ...cat }) => cat);
 
   if (searchParams.categoria) {
     const cat = categorias.find((c) => c.slug === searchParams.categoria);

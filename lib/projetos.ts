@@ -5,6 +5,8 @@ export interface Festival {
   nome: string;
   edicao: string;
   resultado: string;
+  pais?: string;
+  cidade?: string;
 }
 
 export interface Premio {

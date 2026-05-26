@@ -67,6 +67,8 @@ export interface Projeto {
   mostrarElenco: boolean;
   equipe: MembroEquipe[];
   mostrarEquipe: boolean;
+  /** Ordem de exibição manual definida no painel admin */
+  ordem?: number;
 }
 
 function normalize(p: Projeto): Projeto {
@@ -101,11 +103,22 @@ export async function getAll(filters?: {
     projetos = projetos.filter((p) => p.destaque === filters.destaque);
   }
 
-  // Ordena por ano decrescente; em caso de empate, ordem alfabética pelo título
-  projetos.sort((a, b) => {
-    if (b.ano !== a.ano) return b.ano - a.ano;
-    return a.titulo.localeCompare(b.titulo, "pt-BR", { sensitivity: "base" });
-  });
+  // Se algum projeto tem ordem definida, usa ordem manual; senão, ano desc + título asc
+  const temOrdemManual = projetos.some((p) => p.ordem !== undefined);
+  if (temOrdemManual) {
+    projetos.sort((a, b) => {
+      const oa = a.ordem ?? Infinity;
+      const ob = b.ordem ?? Infinity;
+      if (oa !== ob) return oa - ob;
+      if (b.ano !== a.ano) return b.ano - a.ano;
+      return a.titulo.localeCompare(b.titulo, "pt-BR", { sensitivity: "base" });
+    });
+  } else {
+    projetos.sort((a, b) => {
+      if (b.ano !== a.ano) return b.ano - a.ano;
+      return a.titulo.localeCompare(b.titulo, "pt-BR", { sensitivity: "base" });
+    });
+  }
 
   return projetos;
 }
